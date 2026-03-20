@@ -1,0 +1,4 @@
+Asset placeholder for SkillBridge.
+
+Add brand images, freelancer profile photos, and other static assets here.
+

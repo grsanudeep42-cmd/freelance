@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  FREELANCER
+  ADMIN
+}
+
+enum JobType {
+  FREE
+  BID
+  ADMIN
+}
+
+enum JobStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum BidStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum TransactionType {
+  CREDIT_PURCHASE
+  CREDIT_EARNED
+  CREDIT_SPENT
+  PLATFORM_FEE
+  PAYOUT
+  REFUND
+}
+
+enum AdminJobStatus {
+  AVAILABLE
+  CLAIMED
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique
+  passwordHash  String
+  fullName      String
+  avatarUrl     String?
+  role          UserRole
+  creditBalance Float    @default(0)
+  rating        Float?
+  totalRatings  Float    @default(0)
+  isVerified    Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  freelancerProfile      FreelancerProfile?
+  clientJobs             Job[]         @relation("JobClient")
+  assignedFreelancerJobs Job[]         @relation("JobAssignedFreelancer")
+  adminJobs              Job[]         @relation("JobAdmin")
+  bids                   Bid[]         @relation("BidFreelancer")
+  transactions           Transaction[] @relation("TransactionUser")
+  reviewsAsReviewer      Review[]      @relation("ReviewReviewer")
+  reviewsAsReviewee      Review[]      @relation("ReviewReviewee")
+  assignedAdminJobs      AdminJob[]    @relation("AdminJobAssignedTo")
+  notifications          Notification[] @relation("NotificationUser")
+
+  @@map("users")
+}
+
+model FreelancerProfile {
+  id                 String   @id @default(uuid()) @db.Uuid
+  userId             String   @unique @db.Uuid
+  bio                String
+  skills             String[]
+  hourlyRate         Float?
+  portfolioUrl       String?
+  skillPassportScore Float    @default(0)
+  completedJobs      Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("freelancer_profiles")
+}
+
+model Job {
+  id                   String    @id @default(uuid()) @db.Uuid
+  title                String
+  description          String
+  type                 JobType
+  status               JobStatus
+  budget               Float?
+  clientId             String    @db.Uuid
+  assignedFreelancerId String?   @db.Uuid
+  adminId              String?   @db.Uuid
+  creditReward         Int?
+  platformFeePercent   Int       @default(10)
+  deadlineAt           DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  client             User      @relation("JobClient", fields: [clientId], references: [id])
+  assignedFreelancer User?     @relation("JobAssignedFreelancer", fields: [assignedFreelancerId], references: [id])
+  admin              User?     @relation("JobAdmin", fields: [adminId], references: [id])
+  bids               Bid[]     @relation("BidJob")
+  reviews            Review[]  @relation("ReviewJob")
+  adminJob           AdminJob? @relation("JobAdminJob")
+
+  @@index([clientId])
+  @@index([assignedFreelancerId])
+  @@index([adminId])
+  @@index([status])
+  @@map("jobs")
+}
+
+model Bid {
+  id           String    @id @default(uuid()) @db.Uuid
+  jobId        String    @db.Uuid
+  freelancerId String    @db.Uuid
+  amount       Float
+  coverLetter  String
+  status       BidStatus
+  creditsSpent Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  job        Job  @relation("BidJob", fields: [jobId], references: [id])
+  freelancer User @relation("BidFreelancer", fields: [freelancerId], references: [id])
+
+  @@index([jobId])
+  @@index([freelancerId])
+  @@index([status])
+  @@map("bids")
+}
+
+model Transaction {
+  id          String          @id @default(uuid()) @db.Uuid
+  userId      String          @db.Uuid
+  type        TransactionType
+  amount      Float
+  credits     Int?
+  description String
+  referenceId String?
+  createdAt   DateTime        @default(now())
+
+  user User @relation("TransactionUser", fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("transactions")
+}
+
+model Review {
+  id         String   @id @default(uuid()) @db.Uuid
+  jobId      String   @db.Uuid
+  reviewerId String   @db.Uuid
+  revieweeId String   @db.Uuid
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  job      Job  @relation("ReviewJob", fields: [jobId], references: [id])
+  reviewer User @relation("ReviewReviewer", fields: [reviewerId], references: [id])
+  reviewee User @relation("ReviewReviewee", fields: [revieweeId], references: [id])
+
+  @@index([jobId])
+  @@index([reviewerId])
+  @@index([revieweeId])
+  @@map("reviews")
+}
+
+model AdminJob {
+  id           String         @id @default(uuid()) @db.Uuid
+  jobId        String         @unique @db.Uuid
+  assignedTo   String?        @db.Uuid
+  creditReward Int
+  status       AdminJobStatus
+  submissionUrl String?
+  reviewNote   String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  job          Job   @relation("JobAdminJob", fields: [jobId], references: [id])
+  assignedUser User? @relation("AdminJobAssignedTo", fields: [assignedTo], references: [id])
+
+  @@index([jobId])
+  @@index([status])
+  @@index([assignedTo])
+  @@map("admin_jobs")
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  type      String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation("NotificationUser", fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("notifications")
+}
