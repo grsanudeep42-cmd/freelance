@@ -2,8 +2,8 @@ import { z } from "zod";
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  PORT: z.coerce.number().int().positive().default(4000),
-  HOST: z.string().min(1).default("0.0.0.0"),
+  PORT: z.coerce.number().int().positive(),
+  HOST: z.string().min(1),
   CORS_ORIGIN: z.string().min(1),
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().min(1),
@@ -18,9 +18,13 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  const errors = parsed.error.flatten().fieldErrors;
+  const fieldErrors = parsed.error.flatten().fieldErrors;
+  const missingOrInvalidFields = Object.entries(fieldErrors)
+    .filter(([, errors]) => Array.isArray(errors) && errors.length > 0)
+    .map(([field]) => field);
+
   throw new Error(
-    `Environment validation failed: ${JSON.stringify(errors, null, 2)}`
+    `Environment validation failed. Missing/invalid env vars: ${missingOrInvalidFields.join(", ")}`
   );
 }
 

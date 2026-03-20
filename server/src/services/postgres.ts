@@ -1,17 +1,15 @@
-import { PrismaClient } from "@prisma/client";
-import { env } from "../config/env";
+import { PrismaClient } from "../generated/prisma";
 
-declare global {
-  // eslint-disable-next-line no-var
-  var __prismaClient: PrismaClient | undefined;
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: ["error", "warn"],
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
 }
-
-const prismaClient = globalThis.__prismaClient ?? new PrismaClient();
-
-// In development, preserve a single client instance across reloads.
-if (env.NODE_ENV !== "production") {
-  globalThis.__prismaClient = prismaClient;
-}
-
-export const prisma = prismaClient;
-

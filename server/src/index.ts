@@ -1,10 +1,10 @@
-
 import express, { NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
 import { env } from "./config/env";
 import { logger } from "./utils/logger";
+import { apiRoutes } from "./routes";
 
 const app = express();
 
@@ -14,12 +14,10 @@ app.use(morgan("combined"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use("/api", apiRoutes);
+
 app.get("/health", (_req: Request, res: Response) => {
-  res.json({
-    status: "ok",
-    timestamp: new Date().toISOString(),
-    environment: env.NODE_ENV,
-  });
+  res.json({ status: "ok", timestamp: new Date().toISOString(), environment: env.NODE_ENV });
 });
 
 app.use((_req: Request, res: Response) => {
