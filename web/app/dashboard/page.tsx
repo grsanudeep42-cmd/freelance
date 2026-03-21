@@ -8,6 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
 import type { UserRole } from "../../lib/types";
 import type { Job } from "../../lib/jobTypes";
+import { ProfileStrength } from "../../components/ProfileStrength";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -94,11 +95,21 @@ export default function DashboardPage(): JSX.Element {
 
   // 5. Live User Data (for fresh ratings)
   const [liveUser, setLiveUser] = useState<any>(user);
+  const [bannerDismissed, setBannerDismissed] = useState(true);
+
+  useEffect(() => {
+    setBannerDismissed(localStorage.getItem("profileBannerDismissed") === "true");
+  }, []);
+
+  const dismissBanner = () => {
+    localStorage.setItem("profileBannerDismissed", "true");
+    setBannerDismissed(true);
+  };
 
   useEffect(() => {
     if (user?.id) {
       setLiveUser(user);
-      api.get(`/users/${user.id}`).then(res => {
+      api.get(`/profile/me`).then(res => {
         const freshUser = res.data?.data;
         if (freshUser) {
           if (freshUser.role === "CUSTOMER") freshUser.role = "CLIENT";
@@ -241,6 +252,9 @@ export default function DashboardPage(): JSX.Element {
     : ROLE_BADGES.CLIENT;
   const isFreelancer = displayUser?.role === "FREELANCER";
   const isClient = displayUser?.role === "CLIENT";
+  const isProfileIncomplete = isFreelancer 
+    ? (displayUser.freelancerProfile?.profileStrength ?? 0) < 60
+    : !displayUser.bio;
 
   return (
     <ProtectedRoute>
@@ -257,7 +271,20 @@ export default function DashboardPage(): JSX.Element {
               <p className="text-slate-400 animate-pulse">Loading profile…</p>
             </div>
           ) : displayUser ? (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <>
+              {!bannerDismissed && isProfileIncomplete && (
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">⚠️</span>
+                    <p className="text-amber-200 text-sm font-medium">Complete your profile to get hired faster.</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Link href="/profile/edit" className="text-amber-400 text-sm font-bold hover:text-amber-300 transition-colors">Edit Profile &rarr;</Link>
+                    <button onClick={dismissBanner} className="text-amber-500 hover:text-amber-400 text-lg">&times;</button>
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
               
               {/* LEFT COLUMN: Profile & Actions */}
               <div className="space-y-4 lg:col-span-1">
@@ -271,6 +298,7 @@ export default function DashboardPage(): JSX.Element {
                       <div className="min-w-0">
                         <p className="text-white text-lg font-semibold truncate">{displayUser.fullName}</p>
                         <p className="text-slate-400 text-sm truncate">{displayUser.email}</p>
+                        <Link href="/profile/edit" className="text-indigo-400 text-xs font-medium hover:text-indigo-300 mt-1 inline-block transition-colors">Edit Profile &rarr;</Link>
                       </div>
                     </div>
                     <div>
@@ -289,6 +317,11 @@ export default function DashboardPage(): JSX.Element {
                         </p>
                       )}
                     </div>
+                    {isFreelancer && (
+                      <div className="mt-4 pt-4 border-t border-slate-700/50">
+                        <ProfileStrength score={displayUser.freelancerProfile?.profileStrength ?? 0} />
+                      </div>
+                    )}
                   </div>
 
                   {/* Credits & Earnings */}
@@ -587,6 +620,7 @@ export default function DashboardPage(): JSX.Element {
 
               </div>
             </div>
+            </>
           ) : null}
         </div>
       </main>

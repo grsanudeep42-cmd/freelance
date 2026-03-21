@@ -111,18 +111,22 @@ export default function Navbar(): JSX.Element {
         {/* User info + logout */}
         <div className="flex items-center gap-3 shrink-0">
           {user && (
-            <div className="flex items-center gap-2">
+            <Link href="/profile/edit" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
               {/* Avatar */}
-              <div className="w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-white text-xs font-bold select-none shrink-0">
-                {user.fullName?.[0]?.toUpperCase() ?? "?"}
-              </div>
+              {user.avatarUrl ? (
+                <img src={user.avatarUrl} alt="avatar" className="w-8 h-8 rounded-full border border-slate-600 object-cover shrink-0" />
+              ) : (
+                <div className="w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-white text-xs font-bold select-none shrink-0">
+                  {user.fullName?.[0]?.toUpperCase() ?? "?"}
+                </div>
+              )}
               <span className="hidden md:block text-white text-sm font-medium max-w-[100px] truncate">
                 {user.fullName?.split(" ")[0]}
               </span>
               <span className={`hidden sm:inline px-2 py-0.5 rounded-full text-[10px] font-bold border ${roleConf.color}`}>
                 {roleConf.label}
               </span>
-            </div>
+            </Link>
           )}
           <button
             onClick={handleLogout}

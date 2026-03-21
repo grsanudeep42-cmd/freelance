@@ -69,6 +69,10 @@ model User {
   totalRatings  Float    @default(0)
   isVerified    Boolean  @default(false)
   isActive      Boolean  @default(true)
+  bio           String?
+  linkedinUrl   String?
+  githubUrl     String?
+  isAgeVerified Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -99,10 +103,15 @@ model User {
 model FreelancerProfile {
   id                 String   @id @default(uuid()) @db.Uuid
   userId             String   @unique @db.Uuid
-  bio                String
-  skills             String[]
+  bio                String   @default("")
+  skills             String[] @default([])
   hourlyRate         Float?
-  portfolioUrl       String?
+  portfolioLinks     Json     @default("[]")
+  linkedinUrl        String?
+  githubUrl          String?
+  websiteUrl         String?
+  isAgeVerified      Boolean  @default(false)
+  profileStrength    Int      @default(0)
   skillPassportScore Float    @default(0)
   completedJobs      Int      @default(0)
   createdAt          DateTime @default(now())

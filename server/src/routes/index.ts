@@ -12,6 +12,7 @@ import { reviewRoutes } from "./reviewRoutes";
 import { paymentRoutes } from "./paymentRoutes";
 import { skillTestRoutes } from "./skillTestRoutes";
 import { serviceRoutes } from "./serviceRoutes";
+import { profileRoutes } from "./profileRoutes";
 
 export const apiRoutes = Router();
 
@@ -27,6 +28,7 @@ apiRoutes.use("/reviews",     reviewRoutes);
 apiRoutes.use("/payments",    paymentRoutes);
 apiRoutes.use("/skill-tests", skillTestRoutes);
 apiRoutes.use("/services",    serviceRoutes);
+apiRoutes.use("/profile",     profileRoutes);
 
 export { healthRoutes };
 
