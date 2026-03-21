@@ -4,6 +4,16 @@ import { JobStatus, JobType, UserRole } from "../generated/prisma";
 import { prisma } from "../services/postgres";
 import { logger } from "../utils/logger";
 
+class HttpError extends Error {
+  statusCode: number;
+  code: string;
+  constructor(statusCode: number, code: string, message: string) {
+    super(message);
+    this.statusCode = statusCode;
+    this.code = code;
+  }
+}
+
 const createJobSchema = z
   .object({
     title: z.string().min(5),
@@ -140,3 +150,57 @@ export async function getJobById(req: Request, res: Response): Promise<void> {
   }
 }
 
+export async function acceptJob(req: Request, res: Response): Promise<void> {
+  const authed = (() => {
+    const user = req.user;
+    if (!user) return null;
+    return { id: user.id, role: user.role as unknown as UserRole };
+  })();
+
+  if (!authed) {
+    res.status(401).json({ ok: false, error: { message: "Unauthorized", code: "UNAUTHORIZED" } });
+    return;
+  }
+  if (authed.role !== UserRole.FREELANCER) {
+    res.status(403).json({ ok: false, error: { message: "Only freelancers can accept jobs", code: "FORBIDDEN" } });
+    return;
+  }
+
+  try {
+    const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const job = await tx.job.findUnique({
+        where: { id },
+        select: { id: true, type: true, status: true, clientId: true, assignedFreelancerId: true }
+      });
+
+      if (!job) throw new HttpError(404, "NOT_FOUND", "Job not found");
+      if (job.type !== JobType.FREE) throw new HttpError(400, "WRONG_TYPE", "Only FREE jobs can be accepted directly");
+      if (job.status !== JobStatus.OPEN) throw new HttpError(400, "JOB_NOT_OPEN", "Job is not open");
+      if (job.clientId === authed.id) throw new HttpError(403, "FORBIDDEN", "You cannot accept your own job");
+      if (job.assignedFreelancerId) throw new HttpError(400, "ALREADY_ACCEPTED", "Job already has an assigned freelancer");
+
+      return tx.job.update({
+        where: { id },
+        data: {
+          status: JobStatus.IN_PROGRESS,
+          assignedFreelancerId: authed.id
+        }
+      });
+    });
+
+    res.status(200).json({ ok: true, data: updated });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ ok: false, error: { message: err.message, code: "BAD_REQUEST" } });
+      return;
+    }
+    if (err instanceof HttpError) {
+      res.status(err.statusCode).json({ ok: false, error: { message: err.message, code: err.code } });
+      return;
+    }
+    logger.error("acceptJob failed", { message: err instanceof Error ? err.message : String(err) });
+    res.status(500).json({ ok: false, error: { message: "Server error", code: "INTERNAL_SERVER_ERROR" } });
+  }
+}

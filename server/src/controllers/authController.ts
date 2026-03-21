@@ -45,7 +45,8 @@ function toPublicUser(user: {
 const registerSchema = z.object({
   fullName: z.string().min(1),
   email: z.string().email(),
-  password: z.string().min(8)
+  password: z.string().min(8),
+  role: z.enum(["CLIENT", "FREELANCER"]).optional()
 });
 
 const loginSchema = z.object({
@@ -76,12 +77,16 @@ export async function register(req: Request, res: Response): Promise<void> {
 
     const passwordHash = await bcrypt.hash(body.password, 12);
 
+    // Map frontend role label to DB enum: CLIENT → CUSTOMER, FREELANCER → FREELANCER
+    const dbRole =
+      body.role === "FREELANCER" ? UserRole.FREELANCER : UserRole.CUSTOMER;
+
     const user = await prisma.user.create({
       data: {
         email: body.email,
         passwordHash,
         fullName: body.fullName,
-        role: UserRole.CUSTOMER
+        role: dbRole
       },
       select: ACCESS_USER_SELECT
     });

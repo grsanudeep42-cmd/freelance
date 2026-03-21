@@ -189,7 +189,7 @@ export async function approveAdminJob(req: Request, res: Response): Promise<void
 
     await prisma.$transaction(async (tx) => {
       await tx.user.updateMany({
-        where: { id: job.assignedFreelancerId },
+        where: { id: job.assignedFreelancerId! },
         data: { creditBalance: { increment: job.creditReward ?? 0 } }
       });
 
