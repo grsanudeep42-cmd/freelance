@@ -15,8 +15,8 @@ module.exports = {
         violet:   "#8b5cf6",
       },
       fontFamily: {
-        display: ["Syne", "sans-serif"],
-        sans:    ["DM Sans", "system-ui", "sans-serif"],
+        display: ["Inter", "sans-serif"],
+        sans:    ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
         mono:    ["JetBrains Mono", "monospace"],
       },
       animation: {
