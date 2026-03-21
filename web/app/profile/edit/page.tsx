@@ -202,7 +202,7 @@ export default function EditProfilePage() {
 
                     {(user?.totalRatings ?? 0) > 0 ? (
                       <div className="flex items-center gap-1.5 mt-4">
-                        <StarRating value={user?.rating || 0} readonly size="sm" />
+                        <StarRating value={user?.rating || 0} readonly />
                         <span className="text-slate-300 text-sm font-semibold">{user?.rating?.toFixed(1)}</span>
                       </div>
                     ) : (

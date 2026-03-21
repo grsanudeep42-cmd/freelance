@@ -1,9 +1,4 @@
 {
-  "/login/page": "app/login/page.js",
-  "/services/page": "app/services/page.js",
-  "/messages/[userId]/page": "app/messages/[userId]/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/profile/edit/page": "app/profile/edit/page.js",
-  "/page": "app/page.js",
-  "/profile/[userId]/page": "app/profile/[userId]/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/page": "app/page.js"
 }
