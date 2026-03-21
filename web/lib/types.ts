@@ -9,4 +9,27 @@ export type User = {
   role: UserRole;
   creditBalance?: number;
   avatarUrl?: string | null;
+  rating?: number;
+  totalRatings?: number;
+  createdAt?: string;
+  isVerified?: boolean;
+};
+
+export type Review = {
+  id: string;
+  jobId: string;
+  reviewerId: string;
+  revieweeId: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+  reviewer?: {
+    id: string;
+    fullName: string;
+    avatarUrl: string | null;
+  };
+  job?: {
+    id: string;
+    title: string;
+  };
 };

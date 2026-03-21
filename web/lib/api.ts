@@ -1,16 +1,17 @@
-import axios, { type AxiosRequestConfig } from "axios";
+import axios, { type InternalAxiosRequestConfig } from "axios";
 import { TOKEN_KEY } from "./constants";
 
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "") + "/api";
+
 export const api = axios.create({
-  baseURL: "http://localhost:4000/api"
+  baseURL: API_BASE,
 });
 
-api.interceptors.request.use((config: AxiosRequestConfig) => {
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token =
     typeof window === "undefined" ? null : window.localStorage.getItem(TOKEN_KEY);
   if (token) {
-    config.headers = config.headers ?? {};
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.set("Authorization", `Bearer ${token}`);
   }
   return config;
 });

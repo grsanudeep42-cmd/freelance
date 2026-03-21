@@ -24,6 +24,7 @@ export function canAcceptJob(user: User | null, job: JobForGuard): boolean {
   if (!user || !isFreelancer(user)) return false;
   if ((job.status ?? "").toUpperCase() !== "OPEN") return false;
   if (job.clientId && job.clientId === user.id) return false;
+  if (job.assignedFreelancerId) return false;
   return true;
 }
 
@@ -32,6 +33,7 @@ export function canBid(user: User | null, job: JobForGuard): boolean {
   if (!user || !isFreelancer(user)) return false;
   if ((job.status ?? "").toUpperCase() !== "OPEN") return false;
   if (job.clientId && job.clientId === user.id) return false;
+  if (job.assignedFreelancerId) return false;
   return true;
 }
 

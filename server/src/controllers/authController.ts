@@ -86,7 +86,8 @@ export async function register(req: Request, res: Response): Promise<void> {
         email: body.email,
         passwordHash,
         fullName: body.fullName,
-        role: dbRole
+        role: dbRole,
+        creditBalance: 50
       },
       select: ACCESS_USER_SELECT
     });

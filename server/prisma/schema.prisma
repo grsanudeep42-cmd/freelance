@@ -51,6 +51,12 @@ enum AdminJobStatus {
   REJECTED
 }
 
+enum EscrowStatus {
+  HELD
+  RELEASED
+  REFUNDED
+}
+
 model User {
   id            String   @id @default(uuid()) @db.Uuid
   email         String   @unique
@@ -58,7 +64,7 @@ model User {
   fullName      String
   avatarUrl     String?
   role          UserRole
-  creditBalance Float    @default(0)
+  creditBalance Float    @default(50)
   rating        Float?
   totalRatings  Float    @default(0)
   isVerified    Boolean  @default(false)
@@ -76,6 +82,13 @@ model User {
   reviewsAsReviewee      Review[]      @relation("ReviewReviewee")
   assignedAdminJobs      AdminJob[]    @relation("AdminJobAssignedTo")
   notifications          Notification[] @relation("NotificationUser")
+  sentMessages           Message[]      @relation("MessageSender")
+  receivedMessages       Message[]      @relation("MessageReceiver")
+  aiFlags                AiFlag[]
+  clientEscrows          Escrow[]       @relation("EscrowClient")
+  freelancerEscrows      Escrow[]       @relation("EscrowFreelancer")
+  skillTestAttempts      SkillTestAttempt[]
+  skillBadges            SkillBadge[]
 
   @@map("users")
 }
@@ -120,6 +133,8 @@ model Job {
   bids               Bid[]     @relation("BidJob")
   reviews            Review[]  @relation("ReviewJob")
   adminJob           AdminJob? @relation("JobAdminJob")
+  messages           Message[]
+  escrow             Escrow?
 
   @@index([clientId])
   @@index([assignedFreelancerId])
@@ -146,6 +161,29 @@ model Bid {
   @@index([freelancerId])
   @@index([status])
   @@map("bids")
+}
+
+model Escrow {
+  id           String       @id @default(uuid()) @db.Uuid
+  jobId        String       @unique @db.Uuid
+  clientId     String       @db.Uuid
+  freelancerId String       @db.Uuid
+  amount       Float
+  platformFee  Float
+  netAmount    Float
+  status       EscrowStatus @default(HELD)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  job        Job  @relation(fields: [jobId], references: [id])
+  client     User @relation("EscrowClient", fields: [clientId], references: [id])
+  freelancer User @relation("EscrowFreelancer", fields: [freelancerId], references: [id])
+
+  @@index([jobId])
+  @@index([clientId])
+  @@index([freelancerId])
+  @@index([status])
+  @@map("escrows")
 }
 
 model Transaction {
@@ -216,4 +254,95 @@ model Notification {
 
   @@index([userId])
   @@map("notifications")
+}
+
+model Message {
+  id          String   @id @default(uuid()) @db.Uuid
+  senderId    String   @db.Uuid
+  receiverId  String   @db.Uuid
+  jobId       String?  @db.Uuid
+  content     String
+  isBlocked   Boolean  @default(false)
+  flagReason  String?
+  createdAt   DateTime @default(now())
+
+  sender   User  @relation("MessageSender", fields: [senderId], references: [id])
+  receiver User  @relation("MessageReceiver", fields: [receiverId], references: [id])
+  job      Job?  @relation(fields: [jobId], references: [id])
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([jobId])
+  @@map("messages")
+}
+
+model AiFlag {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  messageId  String?  @db.Uuid
+  reason     String
+  severity   String
+  resolved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([resolved])
+  @@map("ai_flags")
+}
+
+model SkillTest {
+  id          String   @id @default(uuid()) @db.Uuid
+  skill       String   // e.g. "React", "Python", "UI Design"
+  title       String
+  description String
+  passMark    Int      @default(70) // percentage
+  createdAt   DateTime @default(now())
+
+  questions   SkillTestQuestion[]
+  attempts    SkillTestAttempt[]
+
+  @@map("skill_tests")
+}
+
+model SkillTestQuestion {
+  id          String   @id @default(uuid()) @db.Uuid
+  testId      String   @db.Uuid
+  question    String
+  options     Json     // string[] of 4 options
+  correctIdx  Int      // 0-3 index of correct answer — NEVER sent to frontend
+  createdAt   DateTime @default(now())
+
+  test SkillTest @relation(fields: [testId], references: [id])
+
+  @@map("skill_test_questions")
+}
+
+model SkillTestAttempt {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  testId    String   @db.Uuid
+  score     Int      // percentage 0-100
+  passed    Boolean
+  createdAt DateTime @default(now())
+
+  user User      @relation(fields: [userId], references: [id])
+  test SkillTest @relation(fields: [testId], references: [id])
+
+  @@unique([userId, testId])  // one attempt per user per test
+  @@map("skill_test_attempts")
+}
+
+model SkillBadge {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  skill     String
+  testId    String   @db.Uuid
+  earnedAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, skill])
+  @@map("skill_badges")
 }

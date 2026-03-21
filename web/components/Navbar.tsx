@@ -37,6 +37,14 @@ export default function Navbar(): JSX.Element {
 
         {/* Nav links */}
         <div className="flex items-center gap-1">
+          {user?.role === "ADMIN" && (
+            <Link
+              href="/admin"
+              className="rounded-lg px-3 py-1.5 text-sm font-medium text-purple-300 hover:bg-slate-700/50 hover:text-purple-200 transition-colors"
+            >
+              Admin
+            </Link>
+          )}
           <Link
             href="/dashboard"
             className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors"
@@ -48,6 +56,20 @@ export default function Navbar(): JSX.Element {
             className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors"
           >
             Jobs
+          </Link>
+          {user?.role === "FREELANCER" && (
+            <Link
+              href="/skills"
+              className="rounded-lg px-3 py-1.5 text-sm font-medium text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300 transition-colors"
+            >
+              Skills ✅
+            </Link>
+          )}
+          <Link
+            href="/messages"
+            className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors"
+          >
+            Messages
           </Link>
         </div>
 

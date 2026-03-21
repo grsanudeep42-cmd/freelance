@@ -204,3 +204,103 @@ export async function acceptJob(req: Request, res: Response): Promise<void> {
     res.status(500).json({ ok: false, error: { message: "Server error", code: "INTERNAL_SERVER_ERROR" } });
   }
 }
+
+export async function getMyActiveJobs(req: Request, res: Response): Promise<void> {
+  const authed = requireAuthenticatedUser(req);
+  if (!authed) {
+    res.status(401).json({ ok: false, error: { message: "Unauthorized", code: "UNAUTHORIZED" } });
+    return;
+  }
+
+  try {
+    const jobs = await prisma.job.findMany({
+      where: {
+        assignedFreelancerId: authed.id,
+        status: JobStatus.IN_PROGRESS
+      },
+      include: {
+        client: {
+          select: { id: true, fullName: true }
+        }
+      },
+      orderBy: { updatedAt: "desc" }
+    });
+
+    res.status(200).json({ ok: true, data: jobs });
+  } catch (err) {
+    logger.error("getMyActiveJobs failed", { message: err instanceof Error ? err.message : String(err) });
+    res.status(500).json({
+      ok: false,
+      error: { message: "Server error", code: "INTERNAL_SERVER_ERROR" }
+    });
+  }
+}
+
+export async function getMyPostedJobs(req: Request, res: Response): Promise<void> {
+  const authed = requireAuthenticatedUser(req);
+  if (!authed) {
+    res.status(401).json({ ok: false, error: { message: "Unauthorized", code: "UNAUTHORIZED" } });
+    return;
+  }
+
+  try {
+    const jobs = await prisma.job.findMany({
+      where: { clientId: authed.id },
+      include: {
+        _count: { select: { bids: true } }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.status(200).json({ ok: true, data: jobs });
+  } catch (err) {
+    logger.error("getMyPostedJobs failed", { message: err instanceof Error ? err.message : String(err) });
+    res.status(500).json({
+      ok: false,
+      error: { message: "Server error", code: "INTERNAL_SERVER_ERROR" }
+    });
+  }
+}
+
+export async function completeJob(req: Request, res: Response): Promise<void> {
+  const authed = requireAuthenticatedUser(req);
+  if (!authed) {
+    res.status(401).json({ ok: false, error: { message: "Unauthorized", code: "UNAUTHORIZED" } });
+    return;
+  }
+
+  try {
+    const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
+
+    const job = await prisma.job.findUnique({ where: { id } });
+    if (!job) {
+      res.status(404).json({ ok: false, error: { message: "Job not found", code: "NOT_FOUND" } });
+      return;
+    }
+
+    if (job.clientId !== authed.id) {
+      res.status(403).json({ ok: false, error: { message: "Only the client who posted the job can mark it as complete", code: "FORBIDDEN" } });
+      return;
+    }
+
+    if (job.status !== JobStatus.IN_PROGRESS) {
+      res.status(400).json({ ok: false, error: { message: "Only IN_PROGRESS jobs can be marked complete", code: "BAD_REQUEST" } });
+      return;
+    }
+
+    const updated = await prisma.job.update({
+      where: { id },
+      data: { status: JobStatus.COMPLETED }
+    });
+
+    res.status(200).json({ ok: true, data: updated });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ ok: false, error: { message: err.message, code: "BAD_REQUEST" } });
+      return;
+    }
+    logger.error("completeJob failed", { message: err instanceof Error ? err.message : String(err) });
+    res.status(500).json({ ok: false, error: { message: "Server error", code: "INTERNAL_SERVER_ERROR" } });
+  }
+}
+

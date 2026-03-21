@@ -13,6 +13,13 @@ const envSchema = z.object({
   RAZORPAY_KEY_ID: z.string().min(1),
   RAZORPAY_KEY_SECRET: z.string().min(1),
   SKILLS_SAMPLE_JSON: z.string().optional(),
+  // Auth rate limiting — all optional with secure production defaults
+  AUTH_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(15 * 60 * 1000), // 15 min
+  AUTH_RATE_LIMIT_MAX_DEV:  z.coerce.number().int().positive().default(100),
+  AUTH_RATE_LIMIT_MAX_PROD: z.coerce.number().int().positive().default(10),
+  GROQ_API_KEY: z.string().min(1),
+  PAYMENT_MODE: z.enum(["mock", "razorpay"]).default("mock"),
+  PLATFORM_FEE_PERCENT: z.coerce.number().int().min(1).max(100).default(5),
 });
 
 const parsed = envSchema.safeParse(process.env);

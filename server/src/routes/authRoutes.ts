@@ -1,4 +1,6 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
+import { env } from "../config/env";
 import { authenticate } from "../middlewares/authenticate";
 import {
   getMe,
@@ -8,7 +10,33 @@ import {
   register
 } from "../controllers/authController";
 
+/**
+ * Auth rate limiter — applies to all /api/auth/* routes.
+ *
+ * Window and per-environment caps are driven entirely by env vars:
+ *   AUTH_RATE_LIMIT_WINDOW_MS  — sliding window in ms  (default: 900000 = 15 min)
+ *   AUTH_RATE_LIMIT_MAX_DEV    — max in development     (default: 100)
+ *   AUTH_RATE_LIMIT_MAX_PROD   — max in production      (default: 10)
+ */
+const authLimiter = rateLimit({
+  windowMs: env.AUTH_RATE_LIMIT_WINDOW_MS,
+  max: env.NODE_ENV === "development"
+    ? env.AUTH_RATE_LIMIT_MAX_DEV
+    : env.AUTH_RATE_LIMIT_MAX_PROD,
+  standardHeaders: true,  // Return RateLimit-* headers (RFC 6585)
+  legacyHeaders: false,   // Disable X-RateLimit-* headers
+  message: {
+    ok: false,
+    error: {
+      message: "Too many requests from this IP. Please try again later.",
+      code: "RATE_LIMITED",
+    },
+  },
+});
+
 export const authRoutes = Router();
+
+authRoutes.use(authLimiter);
 
 authRoutes.post("/register", register);
 authRoutes.post("/login", login);
@@ -16,4 +44,3 @@ authRoutes.post("/refresh", refreshToken);
 authRoutes.post("/logout", logout);
 
 authRoutes.get("/me", authenticate, getMe);
-
