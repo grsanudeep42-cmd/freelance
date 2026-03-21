@@ -21,7 +21,8 @@ const createJobSchema = z
     type: z.nativeEnum(JobType),
     budget: z.coerce.number().optional(),
     deadlineAt: z.coerce.date().optional(),
-    creditReward: z.coerce.number().int().optional()
+    creditReward: z.coerce.number().int().optional(),
+    category: z.string().optional().default("General"),
   })
   .superRefine((val, ctx) => {
     if (val.type === JobType.ADMIN) {
@@ -71,6 +72,7 @@ export async function createJob(req: Request, res: Response): Promise<void> {
         status: JobStatus.OPEN,
         budget: body.budget,
         deadlineAt: body.deadlineAt,
+        category: body.category ?? "General",
         clientId: authed.id,
         adminId: body.type === JobType.ADMIN ? authed.id : undefined,
         creditReward: body.type === JobType.ADMIN ? body.creditReward : undefined
@@ -111,6 +113,41 @@ export async function getJobs(_req: Request, res: Response): Promise<void> {
       ok: false,
       error: { message: "Server error", code: "INTERNAL_SERVER_ERROR" }
     });
+  }
+}
+
+// ─── Public (no auth): GET /api/jobs/public ──────────────────────────────────
+export async function getPublicJobs(_req: Request, res: Response): Promise<void> {
+  try {
+    const jobs = await prisma.job.findMany({
+      where: { status: JobStatus.OPEN },
+      select: {
+        id:          true,
+        title:       true,
+        type:        true,
+        status:      true,
+        budget:      true,
+        creditReward:true,
+        description: true,
+        category:    true,
+        createdAt:   true,
+        deadlineAt:  true,
+        client: { select: { id: true, fullName: true } },
+        _count: { select: { bids: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 40,
+    });
+
+    const safe = jobs.map((j) => ({
+      ...j,
+      description: j.description.length > 150 ? j.description.slice(0, 150) + "…" : j.description,
+    }));
+
+    res.json({ ok: true, data: safe });
+  } catch (err) {
+    logger.error("getPublicJobs failed", { message: err instanceof Error ? err.message : String(err) });
+    res.status(500).json({ ok: false, error: { message: "Server error", code: "INTERNAL_SERVER_ERROR" } });
   }
 }
 

@@ -11,20 +11,22 @@ import { userRoutes } from "./userRoutes";
 import { reviewRoutes } from "./reviewRoutes";
 import { paymentRoutes } from "./paymentRoutes";
 import { skillTestRoutes } from "./skillTestRoutes";
+import { serviceRoutes } from "./serviceRoutes";
 
 export const apiRoutes = Router();
 
-apiRoutes.use("/auth", authRoutes);
-apiRoutes.use("/jobs", jobRoutes);
-apiRoutes.use("/bids", bidRoutes);
-apiRoutes.use("/admin-jobs", adminJobRoutes);
-apiRoutes.use("/admin", adminRoutes);
-apiRoutes.use("/", skillsRoutes);
-apiRoutes.use("/messages", messageRoutes);
-apiRoutes.use("/users", userRoutes);
-apiRoutes.use("/reviews", reviewRoutes);
-apiRoutes.use("/payments", paymentRoutes);
+apiRoutes.use("/auth",        authRoutes);
+apiRoutes.use("/jobs",        jobRoutes);
+apiRoutes.use("/bids",        bidRoutes);
+apiRoutes.use("/admin-jobs",  adminJobRoutes);
+apiRoutes.use("/admin",       adminRoutes);
+apiRoutes.use("/",            skillsRoutes);
+apiRoutes.use("/messages",    messageRoutes);
+apiRoutes.use("/users",       userRoutes);
+apiRoutes.use("/reviews",     reviewRoutes);
+apiRoutes.use("/payments",    paymentRoutes);
 apiRoutes.use("/skill-tests", skillTestRoutes);
+apiRoutes.use("/services",    serviceRoutes);
 
 export { healthRoutes };
 

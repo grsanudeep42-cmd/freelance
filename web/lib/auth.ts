@@ -63,7 +63,8 @@ export function setStoredUser(user: User | null): void {
 // ─── Auth actions ─────────────────────────────────────────────────────────────
 
 export async function login(email: string, password: string): Promise<{ token: string; user: User }> {
-  const res = await fetch("http://localhost:4000/api/auth/login", {
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const res = await fetch(`${base}/api/auth/login`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ email, password })
@@ -97,7 +98,8 @@ export async function register(
   password: string,
   role: UserRole = "CLIENT"
 ): Promise<{ token: string; user: User }> {
-  const res = await fetch("http://localhost:4000/api/auth/register", {
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const res = await fetch(`${base}/api/auth/register`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ fullName, email, password, role: mapFrontendRole(role) })

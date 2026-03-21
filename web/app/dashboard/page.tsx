@@ -44,11 +44,11 @@ function SkeletonList(): JSX.Element {
   return (
     <div className="space-y-2 animate-pulse">
       {[1, 2].map((i) => (
-        <div key={i} className="rounded-xl bg-[#0b1220] border border-slate-700/60 px-4 py-3 flex items-center gap-3">
-          <div className="h-5 w-12 bg-slate-700/60 rounded-full" />
+        <div key={i} className="rounded-xl bg-white/3 border border-white/5 px-4 py-3 flex items-center gap-3">
+          <div className="h-5 w-12 bg-white/8 rounded-full" />
           <div className="flex-1 space-y-1.5">
-            <div className="h-3.5 bg-slate-700/60 rounded w-2/3" />
-            <div className="h-3 bg-slate-700/40 rounded w-1/3" />
+            <div className="h-3.5 bg-white/8 rounded w-2/3" />
+            <div className="h-3 bg-white/5 rounded w-1/3" />
           </div>
         </div>
       ))}
@@ -244,28 +244,28 @@ export default function DashboardPage(): JSX.Element {
 
   return (
     <ProtectedRoute>
-      <main className="min-h-screen bg-[#0f172a] px-4 py-8">
-        <div className="mx-auto w-full max-w-4xl space-y-6">
+      <main className="min-h-screen bg-appBg px-4 py-8 page-enter">
+        <div className="mx-auto w-full max-w-5xl space-y-6">
           
-          <header className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6">
-            <h1 className="text-white text-2xl font-bold tracking-tight">Dashboard</h1>
+          <header className="glass-card p-6">
+            <h1 className="font-display text-2xl font-bold text-white tracking-tight">Dashboard</h1>
             <p className="mt-1 text-slate-400 text-sm">Welcome back, {displayUser?.fullName?.split(" ")[0] || "User"}.</p>
           </header>
 
           {authLoading ? (
-            <div className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6">
+            <div className="glass-card p-6">
               <p className="text-slate-400 animate-pulse">Loading profile…</p>
             </div>
           ) : displayUser ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
               
               {/* LEFT COLUMN: Profile & Actions */}
-              <div className="space-y-6 lg:col-span-1">
+              <div className="space-y-4 lg:col-span-1">
                 {/* User info card */}
-                <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6">
+                <section className="glass-card-accent p-6">
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="h-14 w-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold select-none shrink-0">
+                      <div className="h-14 w-14 rounded-full gradient-bg flex items-center justify-center text-white text-xl font-bold select-none shrink-0">
                         {displayUser.fullName?.[0]?.toUpperCase() ?? "?"}
                       </div>
                       <div className="min-w-0">
@@ -293,45 +293,45 @@ export default function DashboardPage(): JSX.Element {
 
                   {/* Credits & Earnings */}
                   {displayUser.creditBalance !== undefined && (
-                    <div className="mt-6 rounded-xl bg-amber-500/10 border border-amber-500/20 px-4 py-4 flex flex-col justify-center shadow-inner space-y-1">
-                      <span className="text-amber-200/80 text-sm font-medium">Balance & Earnings</span>
-                      <span className="text-amber-400 font-bold text-xl tabular-nums">⚡ {displayUser.creditBalance} {isFreelancer ? "credits + earnings" : "credits"}</span>
+                    <div className="mt-5 rounded-xl bg-amber-500/10 border border-amber-500/20 px-4 py-4 glow-amber">
+                      <span className="text-amber-400/70 text-xs font-semibold uppercase tracking-wider">Balance</span>
+                      <p className="font-mono text-2xl font-bold gradient-text-amber mt-1">⚡ {displayUser.creditBalance} <span className="text-base font-normal text-amber-400/70">credits</span></p>
                     </div>
                   )}
                 </section>
 
                 {/* Client Stats snippet */}
                 {isClient && (
-                  <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6">
-                    <h2 className="text-white text-sm font-semibold mb-4">Quick Stats</h2>
+                  <section className="glass-card p-5">
+                    <h2 className="text-white text-sm font-semibold mb-4 flex items-center gap-2"><span className="w-1 h-4 rounded gradient-bg inline-block"/>Quick Stats</h2>
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between items-center text-slate-300">
                         <span>Total Posted</span>
-                        <span className="font-semibold text-white">{clientStats.total}</span>
+                        <span className="font-mono font-semibold text-white">{clientStats.total}</span>
                       </div>
                       <div className="flex justify-between items-center text-blue-300">
                         <span>Active</span>
-                        <span className="font-semibold">{clientStats.active}</span>
+                        <span className="font-mono font-semibold">{clientStats.active}</span>
                       </div>
                       <div className="flex justify-between items-center text-emerald-300">
                         <span>Completed</span>
-                        <span className="font-semibold">{clientStats.completed}</span>
+                        <span className="font-mono font-semibold">{clientStats.completed}</span>
                       </div>
                     </div>
                   </section>
                 )}
 
                 {/* Actions */}
-                <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6 space-y-3">
+                <section className="glass-card p-5 space-y-3">
                   <Link
                     href="/jobs"
-                    className="flex w-full items-center justify-center rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
+                    className="btn-primary w-full py-2.5 rounded-xl justify-center"
                   >
                     Browse Jobs Feed
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full rounded-xl border border-slate-700 py-3 text-sm font-semibold text-red-400 hover:border-red-500/50 hover:bg-red-500/5 transition-colors"
+                    className="w-full rounded-xl border border-white/8 py-2.5 text-sm font-semibold text-red-400 hover:border-red-500/40 hover:bg-red-500/5 transition-all"
                   >
                     Logout
                   </button>
@@ -351,7 +351,7 @@ export default function DashboardPage(): JSX.Element {
                           className={
                             displayUser.role === r
                               ? "flex-1 rounded-xl border-2 border-amber-400 bg-amber-400/10 text-amber-300 py-2 text-sm font-semibold cursor-default"
-                              : "flex-1 rounded-xl border-2 border-slate-700 bg-transparent text-slate-400 py-2 text-sm font-semibold hover:border-slate-500 transition-colors"
+                              : "flex-1 rounded-xl border-2 border-white/10 bg-transparent text-slate-400 py-2 text-sm font-semibold hover:border-white/25 transition-colors"
                           }
                         >
                           {r === "CLIENT" ? "Client" : "Freelancer"}
@@ -362,35 +362,34 @@ export default function DashboardPage(): JSX.Element {
                 )}
               </div>
 
-              {/* RIGHT COLUMN: Scoped content based on role */}
-              <div className="space-y-6 lg:col-span-2">
+              <div className="space-y-5 lg:col-span-2">
 
                 {/* ─── FREELANCER SECTIONS ───────────────────────────────────────── */}
                 {isFreelancer && (
                   <>
                     {/* Available Missions */}
-                    <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6 space-y-4">
+                    <section className="glass-card p-6 space-y-4">
                       <div className="flex items-center justify-between">
-                        <h2 className="text-white text-base font-semibold">Available Missions</h2>
-                        <span className="text-slate-400 text-xs">Earn credits</span>
+                        <h2 className="text-white text-base font-semibold flex items-center gap-2"><span className="w-1 h-4 rounded bg-violet-500 inline-block"/>Available Missions</h2>
+                        <span className="text-slate-400 text-xs">Earn credits ⚡</span>
                       </div>
 
                       {availableLoading ? (
                         <SkeletonList />
                       ) : availableMissions.length === 0 ? (
-                        <div className="rounded-xl border border-slate-700/60 bg-[#0b1220] p-5 text-center">
-                          <p className="text-slate-400 text-sm">No new missions available right now.</p>
+                        <div className="rounded-xl border border-white/5 bg-white/2 p-5 text-center">
+                          <p className="text-slate-500 text-sm">No new missions available right now.</p>
                         </div>
                       ) : (
                         <div className="space-y-3">
                           {availableMissions.map((m) => (
-                            <div key={m.id} className="rounded-xl border border-slate-700/60 bg-[#0b1220] p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+                            <div key={m.id} className="rounded-xl border border-white/6 bg-white/2 p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between card-hover">
                               <div>
                                 <h3 className="text-white text-sm font-medium">{m.title}</h3>
                                 <p className="text-slate-400 text-xs mt-1 line-clamp-2">{m.description}</p>
                               </div>
                               <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0 shrink-0">
-                                <span className="text-amber-400 text-sm font-bold bg-amber-400/10 px-2.5 py-1 rounded">
+                                <span className="font-mono text-amber-400 text-sm font-bold bg-amber-400/10 px-2.5 py-1 rounded-lg">
                                   {m.creditReward} ⚡
                                 </span>
                                 <button
@@ -408,9 +407,9 @@ export default function DashboardPage(): JSX.Element {
                     </section>
 
                     {/* My Active Jobs / Missions */}
-                    <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6 space-y-4">
+                    <section className="glass-card p-6 space-y-4">
                       <div className="flex items-center justify-between">
-                        <h2 className="text-white text-base font-semibold">My Active Work</h2>
+                        <h2 className="text-white text-base font-semibold flex items-center gap-2"><span className="w-1 h-4 rounded bg-indigo inline-block"/>My Active Work</h2>
                         {activeJobs.length > 0 && (
                           <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">
                             {activeJobs.length} active
@@ -423,9 +422,9 @@ export default function DashboardPage(): JSX.Element {
                       ) : activeJobsError ? (
                         <p className="text-red-400 text-sm">{activeJobsError}</p>
                       ) : activeJobs.length === 0 ? (
-                        <div className="rounded-xl border border-slate-700/60 bg-[#0b1220] p-6 text-center text-sm">
+                        <div className="rounded-xl border border-white/5 bg-white/2 p-6 text-center text-sm">
                           <p className="text-slate-500">You have no active jobs.</p>
-                          <Link href="/jobs" className="text-blue-400 hover:underline mt-1 inline-block">
+                          <Link href="/jobs" className="text-indigo hover:text-indigo-light transition-colors mt-1 inline-block font-medium">
                             Browse the marketplace
                           </Link>
                         </div>
@@ -434,7 +433,7 @@ export default function DashboardPage(): JSX.Element {
                           {activeJobs.map((job) => {
                             const isMission = job.type === "ADMIN";
                             return (
-                              <div key={job.id} className="rounded-xl bg-[#0b1220] border border-slate-700/60 overflow-hidden">
+                              <div key={job.id} className="rounded-xl bg-white/2 border border-white/6 overflow-hidden card-hover">
                                 <div className="p-4 flex items-start sm:items-center justify-between gap-3 flex-col sm:flex-row border-b border-slate-700/30">
                                   <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto">
                                     <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${typeBadgeClass(job.type)}`}>
@@ -508,11 +507,11 @@ export default function DashboardPage(): JSX.Element {
                     ) : postedJobsError ? (
                       <p className="text-red-400 text-sm">{postedJobsError}</p>
                     ) : postedJobs.length === 0 ? (
-                      <div className="rounded-xl border border-slate-700/60 bg-[#0b1220] p-8 text-center">
-                        <p className="text-slate-400 text-sm mb-3">You haven't posted any jobs yet.</p>
+                      <div className="rounded-xl border border-white/5 bg-white/2 p-8 text-center">
+                        <p className="text-slate-400 text-sm mb-3">You haven&apos;t posted any jobs yet.</p>
                         <Link
                           href="/jobs/new"
-                          className="inline-block rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
+                          className="inline-block btn-primary px-5 py-2 text-sm rounded-xl"
                         >
                           Post your first job
                         </Link>
@@ -520,7 +519,7 @@ export default function DashboardPage(): JSX.Element {
                     ) : (
                       <div className="space-y-3">
                         {postedJobs.map((job) => (
-                          <div key={job.id} className="rounded-xl bg-[#0b1220] border border-slate-700/60 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div key={job.id} className="rounded-xl bg-white/2 border border-white/6 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 card-hover">
                             <div className="min-w-0">
                               <h3 className="text-white text-sm font-medium truncate mb-1.5">{job.title}</h3>
                               <div className="flex items-center gap-2 flex-wrap">
@@ -562,19 +561,19 @@ export default function DashboardPage(): JSX.Element {
                   {transactionsLoading ? (
                     <SkeletonList />
                   ) : transactions.length === 0 ? (
-                    <div className="rounded-xl border border-slate-700/60 bg-[#0b1220] p-6 text-center text-sm">
+                    <div className="rounded-xl border border-white/5 bg-white/2 p-6 text-center text-sm">
                       <p className="text-slate-500">No recent transactions.</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
                       {transactions.slice(0, 5).map((t: any) => (
-                        <div key={t.id} className="rounded-xl bg-[#0b1220] border border-slate-700/60 p-4 flex items-center justify-between gap-3">
+                        <div key={t.id} className="rounded-xl bg-white/2 border border-white/6 p-4 flex items-center justify-between gap-3 card-hover">
                           <div>
                             <p className="text-white text-sm font-medium">{t.description}</p>
-                            <p className="text-slate-500 text-xs mt-0.5">{new Date(t.createdAt).toLocaleDateString()}</p>
+                            <p className="font-mono text-slate-500 text-xs mt-0.5">{new Date(t.createdAt).toLocaleDateString()}</p>
                           </div>
                           <div className="text-right shrink-0">
-                            <span className={`text-sm font-bold ${t.type === "CREDIT_SPENT" || t.type === "PLATFORM_FEE" ? "text-red-400" : "text-emerald-400"}`}>
+                            <span className={`font-mono text-sm font-bold ${t.type === "CREDIT_SPENT" || t.type === "PLATFORM_FEE" ? "text-red-400" : "text-emerald-400"}`}>
                               {t.type === "CREDIT_SPENT" || t.type === "PLATFORM_FEE" ? "-" : "+"}
                               {t.amount ? t.amount : t.credits} {t.amount ? "INR" : "⚡"}
                             </span>
