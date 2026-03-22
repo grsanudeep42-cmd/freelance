@@ -151,7 +151,7 @@ export async function getBidsForJob(req: Request, res: Response): Promise<void> 
 
     const job = await prisma.job.findUnique({
       where: { id: params.jobId },
-      select: { id: true, clientId: true }
+      select: { id: true, clientId: true, assignedFreelancerId: true }
     });
 
     if (!job) {
@@ -159,8 +159,17 @@ export async function getBidsForJob(req: Request, res: Response): Promise<void> 
       return;
     }
 
-    if (job.clientId !== authed.id) {
-      res.status(403).json({ ok: false, error: { message: "Forbidden", code: "FORBIDDEN" } });
+    // Allow if: admin, job client, or assigned freelancer
+    const isAllowed =
+      req.user?.role === "ADMIN" ||
+      job.clientId === req.user?.id ||
+      job.assignedFreelancerId === req.user?.id;
+
+    if (!isAllowed) {
+      res.status(403).json({
+        ok: false,
+        error: { message: "Access denied", code: "FORBIDDEN" },
+      });
       return;
     }
 

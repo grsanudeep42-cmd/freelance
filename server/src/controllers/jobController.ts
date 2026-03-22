@@ -172,23 +172,7 @@ export async function getJobById(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    // IDOR Protection: non-OPEN / non-COMPLETED jobs are private
-    // Only the client, assigned freelancer, or admin can view them
-    if (job.status !== "OPEN" && job.status !== "COMPLETED") {
-      const userId = req.user?.id;
-      const isInvolved =
-        job.clientId === userId ||
-        job.assignedFreelancerId === userId ||
-        req.user?.role === "ADMIN";
 
-      if (!isInvolved) {
-        res.status(403).json({
-          ok: false,
-          error: { message: "Access denied", code: "FORBIDDEN" },
-        });
-        return;
-      }
-    }
 
     res.status(200).json({ ok: true, data: { job, bidsCount: job._count.bids } });
   } catch (err) {

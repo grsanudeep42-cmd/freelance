@@ -46,6 +46,16 @@ export default function JobDetailsPage(): JSX.Element {
   const [acceptedBid, setAcceptedBid] = useState<Bid | null>(null);
 
   useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function loadJob(): Promise<void> {
@@ -146,18 +156,91 @@ export default function JobDetailsPage(): JSX.Element {
     }
   }
 
-  async function initiateEscrowPayment(): Promise<void> {
-    if (!job?.id || !acceptedBid?.id) return;
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
+  async function handlePayIntoEscrow() {
+    if (!acceptedBid) return;
+    setPaymentLoading(true);
+
     try {
-      setActionBusy(true);
-      await api.post("/payments/initiate", { bidId: acceptedBid.id });
-      setActionMessage("✅ Payment held in escrow! Freelancer can now start work.");
-      const res = await api.get(`/payments/escrow/${job.id}`);
-      setEscrow(res.data?.data || null);
+      // Step 1: Create order on backend
+      const orderRes = await api.post("/payments/initiate", {
+        bidId: acceptedBid.id,
+      });
+
+      const { orderId, amount, currency, isMock } =
+        orderRes.data.data;
+
+      // Step 2: If mock mode, skip Razorpay and verify directly
+      if (isMock) {
+        await api.post("/payments/verify", {
+          razorpay_order_id: orderId,
+          razorpay_payment_id: `mock_pay_${Date.now()}`,
+          razorpay_signature: "mock_signature",
+          jobId: job!.id,
+        });
+        const res = await api.get(`/payments/escrow/${job!.id}`);
+        setEscrow(res.data?.data || null);
+        setActionMessage("✅ Payment held in escrow! Freelancer can now start work.");
+        await refreshJob();
+        return;
+      }
+
+      // Step 3: Open Razorpay checkout
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: Math.round(amount * 100), // paise
+        currency,
+        name: "SkillBridge",
+        description: `Escrow for: ${job!.title}`,
+        order_id: orderId,
+        handler: async function (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) {
+          // Step 4: Verify payment on backend
+          try {
+            await api.post("/payments/verify", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              jobId: job!.id,
+            });
+            const res = await api.get(`/payments/escrow/${job!.id}`);
+            setEscrow(res.data?.data || null);
+            setActionMessage(
+              "✅ Payment held in escrow! Freelancer can now start work."
+            );
+            await refreshJob();
+          } catch {
+            setActionError("Payment verification failed. Please contact support.");
+          }
+        },
+        prefill: {
+          email: user?.email ?? "",
+        },
+        theme: {
+          color: "#10b981", // emerald-500
+        },
+        modal: {
+          ondismiss: () => {
+            setPaymentLoading(false);
+          },
+        },
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on("payment.failed", () => {
+        setActionError("Payment failed. Please try again.");
+        setPaymentLoading(false);
+      });
+      rzp.open();
     } catch (err: any) {
-      setActionError(err.response?.data?.error?.message || "Failed to initiate payment.");
+      setActionError(err.response?.data?.error?.message || "Failed to initiate payment. Please try again.");
     } finally {
-      setActionBusy(false);
+      setPaymentLoading(false);
     }
   }
 
@@ -371,11 +454,11 @@ export default function JobDetailsPage(): JSX.Element {
                              <span>₹{(acceptedBid.amount - (Math.round(acceptedBid.amount * 5) / 100)).toFixed(2)}</span>
                            </div>
                            <button
-                             onClick={initiateEscrowPayment}
-                             disabled={actionBusy}
+                             onClick={handlePayIntoEscrow}
+                             disabled={paymentLoading || actionBusy}
                              className="w-full mt-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors py-3 disabled:opacity-50"
                            >
-                             {actionBusy ? "Processing…" : `Pay ₹${acceptedBid.amount} into Escrow`}
+                             {paymentLoading || actionBusy ? "Opening payment..." : `Pay ₹${acceptedBid.amount} into Escrow`}
                            </button>
                          </div>
                        ) : (

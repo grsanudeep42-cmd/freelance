@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../services/postgres";
-import { paymentService } from "../services/paymentService";
+import { createRazorpayOrder, verifyRazorpaySignature } from "../services/razorpayService";
 import { logger } from "../utils/logger";
 import { EscrowStatus, JobStatus, UserRole, TransactionType, BidStatus, JobType } from "../generated/prisma";
 import { env } from "../config/env";
@@ -54,7 +54,7 @@ export async function initiatePayment(req: Request, res: Response): Promise<void
     const platformFee = Math.round(amount * env.PLATFORM_FEE_PERCENT) / 100;
     const netAmount = amount - platformFee;
 
-    const paymentOrder = await paymentService.createOrder(amount, "INR", job.id);
+    const paymentOrder = await createRazorpayOrder(amount, "INR", job.id);
 
     const { escrowId } = await prisma.$transaction(async (tx) => {
       const escrow = await tx.escrow.create({
@@ -252,5 +252,92 @@ export async function getMyTransactions(req: Request, res: Response): Promise<vo
     res.status(200).json({ ok: true, data: transactions });
   } catch (err: any) {
     res.status(500).json({ ok: false, error: { message: "Internal server error", code: "INTERNAL_SERVER_ERROR" } });
+  }
+}
+
+export async function verifyPayment(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const user = req.user;
+  if (!user) {
+    res.status(401).json({
+      ok: false,
+      error: { message: "Unauthorized", code: "UNAUTHORIZED" },
+    });
+    return;
+  }
+
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, jobId } =
+      z.object({
+        razorpay_order_id:  z.string(),
+        razorpay_payment_id: z.string(),
+        razorpay_signature: z.string(),
+        jobId: z.string().uuid(),
+      }).parse(req.body);
+
+    // Skip verification in mock mode
+    const isMock =
+      razorpay_order_id.startsWith("mock_") ||
+      !process.env.RAZORPAY_KEY_SECRET;
+
+    if (!isMock) {
+      const isValid = verifyRazorpaySignature(
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature
+      );
+
+      if (!isValid) {
+        res.status(400).json({
+          ok: false,
+          error: {
+            message: "Payment verification failed",
+            code: "PAYMENT_VERIFICATION_FAILED",
+          },
+        });
+        return;
+      }
+    }
+
+    // Payment verified — escrow was already created in initiatePayment
+    // Just confirm it's still HELD
+    const escrow = await prisma.escrow.findUnique({
+      where: { jobId },
+    });
+
+    if (!escrow || escrow.status !== EscrowStatus.HELD) {
+      res.status(400).json({
+        ok: false,
+        error: {
+          message: "Escrow not found or not in HELD state",
+          code: "BAD_REQUEST",
+        },
+      });
+      return;
+    }
+
+    res.json({
+      ok: true,
+      data: {
+        verified: true,
+        escrowId: escrow.id,
+        amount: escrow.amount,
+        isMock,
+      },
+    });
+  } catch (err: unknown) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({
+        ok: false,
+        error: { message: err.message, code: "BAD_REQUEST" },
+      });
+      return;
+    }
+    res.status(500).json({
+      ok: false,
+      error: { message: "Internal server error", code: "INTERNAL_SERVER_ERROR" },
+    });
   }
 }
