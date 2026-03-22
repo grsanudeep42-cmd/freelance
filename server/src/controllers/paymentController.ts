@@ -280,7 +280,7 @@ export async function verifyPayment(
     // Skip verification in mock mode
     const isMock =
       razorpay_order_id.startsWith("mock_") ||
-      !process.env.RAZORPAY_KEY_SECRET;
+      !process.env.RAZORPAY_KEY_SECRET!;
 
     if (!isMock) {
       const isValid = verifyRazorpaySignature(

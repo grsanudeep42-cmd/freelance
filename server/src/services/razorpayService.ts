@@ -8,8 +8,8 @@ const getRazorpay = () => {
     return null;
   }
   return new Razorpay({
-    key_id: env.RAZORPAY_KEY_ID,
-    key_secret: env.RAZORPAY_KEY_SECRET,
+    key_id: env.RAZORPAY_KEY_ID!,
+    key_secret: env.RAZORPAY_KEY_SECRET!,
   });
 };
 
@@ -29,7 +29,7 @@ export async function createRazorpayOrder(
   const rzp = getRazorpay();
 
   // Mock mode if no keys
-  if (!rzp || env.PAYMENT_MODE === "mock") {
+  if (!rzp || env.PAYMENT_MODE! === "mock") {
     return {
       orderId: `mock_order_${Date.now()}`,
       amount: amountINR,
@@ -64,7 +64,7 @@ export function verifyRazorpaySignature(
 
   const body = orderId + "|" + paymentId;
   const expectedSignature = crypto
-    .createHmac("sha256", env.RAZORPAY_KEY_SECRET)
+    .createHmac("sha256", env.RAZORPAY_KEY_SECRET!)
     .update(body)
     .digest("hex");
 

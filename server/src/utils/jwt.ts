@@ -19,21 +19,21 @@ const ACCESS_TOKEN_EXPIRES_IN = "15m";
 const REFRESH_TOKEN_EXPIRES_IN = "7d";
 
 export function signAccessToken(payload: TokenPayload): string {
-  return jwt.sign(payload, env.JWT_ACCESS_TOKEN_SECRET, {
+  return jwt.sign(payload, env.JWT_ACCESS_TOKEN_SECRET!, {
     expiresIn: ACCESS_TOKEN_EXPIRES_IN,
-    issuer: env.JWT_ISSUER
+    issuer: env.JWT_ISSUER!
   });
 }
 
 export function signRefreshToken(payload: TokenPayload): string {
-  return jwt.sign(payload, env.JWT_REFRESH_TOKEN_SECRET, {
+  return jwt.sign(payload, env.JWT_REFRESH_TOKEN_SECRET!, {
     expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-    issuer: env.JWT_ISSUER
+    issuer: env.JWT_ISSUER!
   });
 }
 
 function verifyToken(token: string, secret: string): TokenPayload {
-  const decoded = jwt.verify(token, secret, { issuer: env.JWT_ISSUER });
+  const decoded = jwt.verify(token, secret, { issuer: env.JWT_ISSUER! });
   const data = decoded as JwtPayload | string;
   if (typeof data === "string") throw new Error("Invalid token payload");
 
@@ -47,10 +47,10 @@ function verifyToken(token: string, secret: string): TokenPayload {
 }
 
 export function verifyAccessToken(token: string): TokenPayload {
-  return verifyToken(token, env.JWT_ACCESS_TOKEN_SECRET);
+  return verifyToken(token, env.JWT_ACCESS_TOKEN_SECRET!);
 }
 
 export function verifyRefreshToken(token: string): TokenPayload {
-  return verifyToken(token, env.JWT_REFRESH_TOKEN_SECRET);
+  return verifyToken(token, env.JWT_REFRESH_TOKEN_SECRET!);
 }
 

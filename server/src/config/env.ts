@@ -25,7 +25,7 @@ const envSchema = z.object({
   PLATFORM_FEE_PERCENT: z.coerce.number().int().min(1).max(100).default(5),
 });
 
-const parsed = envSchema.safeParse(process.env);
+const parsed = envSchema.safeParse(process.env!);
 
 if (!parsed.success) {
   console.error("❌ Invalid environment variables:");
@@ -33,4 +33,4 @@ if (!parsed.success) {
   process.exit(1); // crash hard if env is wrong
 }
 
-export const env = parsed.data;
+export const env = parsed.data!;

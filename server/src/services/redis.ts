@@ -8,7 +8,7 @@ declare global {
 }
 
 // Singleton to ensure a single connection pool is reused across the app.
-const client = globalThis.__redisClient ?? new Redis(env.REDIS_URL);
+const client = globalThis.__redisClient ?? new Redis(env.REDIS_URL!);
 
 if (!globalThis.__redisClient) {
   globalThis.__redisClient = client;

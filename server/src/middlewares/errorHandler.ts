@@ -2,7 +2,7 @@ import type { ErrorRequestHandler } from "express";
 import { logger } from "../utils/logger";
 
 export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
-  const isDev = process.env.NODE_ENV === "development";
+  const isDev = process.env.NODE_ENV! === "development";
 
   logger.error(`[ERROR] ${req.method} ${req.path}: ${err.message}`);
 

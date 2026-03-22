@@ -2,7 +2,7 @@ import fs from "node:fs";
 import winston from "winston";
 import { env } from "../config/env";
 
-const isProduction = env.NODE_ENV === "production";
+const isProduction = env.NODE_ENV! === "production";
 
 const level = isProduction ? "info" : "debug";
 
