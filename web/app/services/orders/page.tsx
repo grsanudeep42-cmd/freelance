@@ -189,7 +189,7 @@ export default function MyOrdersPage(): JSX.Element {
   return (
     <ProtectedRoute>
       <main className="min-h-screen bg-white dark:bg-[#0A0F1E] px-4 py-8">
-        <div className="mx-auto max-w-3xl space-y-6">
+        <div className="mx-auto max-w-7xl space-y-6">
           <header className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm px-6 py-5">
             <h1 className="text-xl font-bold text-slate-900 dark:text-white">My Orders</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Track orders you&apos;ve placed and received.</p>
