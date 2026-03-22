@@ -7,11 +7,11 @@ import { useAuth } from "../context/AuthContext";
 
 const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/jobs",      label: "Jobs" },
-  { href: "/services",  label: "Services" },
-  { href: "/services/orders", label: "Orders" },
-  { href: "/analytics", label: "Analytics" },
-  { href: "/messages",  label: "Messages" },
+  { href: "/jobs",      label: "Jobs"       },
+  { href: "/services",  label: "Services"   },
+  { href: "/orders",    label: "Orders"     },
+  { href: "/analytics", label: "Analytics"  },
+  { href: "/messages",  label: "Messages"   },
 ];
 
 const ROLE_CONFIG: Record<string, { label: string; color: string }> = {

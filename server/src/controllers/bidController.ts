@@ -246,3 +246,25 @@ export async function acceptBid(req: Request, res: Response): Promise<void> {
   }
 }
 
+export async function getMyBids(req: Request, res: Response): Promise<void> {
+  try {
+    const userId = req.user!.id;
+    const bids = await prisma.bid.findMany({
+      where: { freelancerId: userId },
+      include: {
+        job: {
+          select: {
+            id: true,
+            title: true,
+            type: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json({ ok: true, data: bids });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: { message: "Failed to fetch bids" } });
+  }
+}
