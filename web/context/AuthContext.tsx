@@ -22,8 +22,8 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (fullName: string, email: string, password: string, role?: UserRole) => Promise<void>;
   logout: () => void;
-  /** DEV ONLY: override role locally (no backend change) */
-  setUserRole: (role: UserRole) => void;
+  /** Update user in state + localStorage (used after role switch) */
+  updateUser: (user: User) => void;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -115,12 +115,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
-  const setUserRole = useCallback((role: UserRole) => {
-    if (!user) return;
-    const updated = { ...user, role };
-    setUser(updated);
-    setStoredUser(updated);
-  }, [user]);
+  const updateUser = useCallback((updatedUser: User) => {
+    setUser(updatedUser);
+    setStoredUser(updatedUser);
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -132,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
-        setUserRole
+        updateUser
       }}
     >
       {children}

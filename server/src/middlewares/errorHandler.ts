@@ -1,15 +1,18 @@
 import type { ErrorRequestHandler } from "express";
+import { logger } from "../utils/logger";
 
-export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
-  const statusCode = typeof (err as { status?: number }).status === "number" ? (err as { status: number }).status : 500;
-  const message = err instanceof Error ? err.message : "Internal server error";
+export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+  const isDev = process.env.NODE_ENV === "development";
 
-  res.status(statusCode).json({
+  logger.error(`[ERROR] ${req.method} ${req.path}: ${err.message}`);
+
+  // Never send stack traces or raw error messages to clients in production
+  res.status(500).json({
     ok: false,
     error: {
-      message,
-      code: "INTERNAL_SERVER_ERROR"
-    }
+      message: isDev ? err.message : "Internal server error",
+      code: "INTERNAL_ERROR",
+      ...(isDev && { stack: err.stack }),
+    },
   });
 };
-

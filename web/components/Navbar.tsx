@@ -1,15 +1,30 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { api } from "../lib/api";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface NotifItem {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  link: string | null;
+  isRead: boolean;
+  createdAt: string;
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/jobs",      label: "Jobs"       },
   { href: "/services",  label: "Services"   },
-  { href: "/orders",    label: "Orders"     },
+  { href: "/services/orders", label: "Orders" },
   { href: "/analytics", label: "Analytics"  },
   { href: "/messages",  label: "Messages"   },
 ];
@@ -20,12 +35,57 @@ const ROLE_CONFIG: Record<string, { label: string; color: string }> = {
   ADMIN:      { label: "Admin",      color: "text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-500/20 border-purple-200 dark:border-purple-500/40" },
 };
 
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export default function Navbar(): JSX.Element {
   const { user, isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
 
+  // Notification state
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<NotifItem[]>([]);
+  const [bellOpen, setBellOpen] = useState(false);
+
+  // Poll notifications every 30s
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    async function fetchCount() {
+      try {
+        const res = await api.get("/notifications");
+        setUnreadCount(res.data?.data?.unreadCount ?? 0);
+        setNotifications(res.data?.data?.notifications ?? []);
+      } catch { /* ignore */ }
+    }
+
+    fetchCount();
+    const interval = setInterval(fetchCount, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  // Mark a single notification read + navigate
+  async function handleNotifClick(notif: NotifItem) {
+    if (!notif.isRead) {
+      await api.patch(`/notifications/${notif.id}/read`).catch(() => {});
+      setUnreadCount((c) => Math.max(0, c - 1));
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n))
+      );
+    }
+    setBellOpen(false);
+    if (notif.link) router.push(notif.link);
+  }
+
+  // Mark all read
+  async function handleMarkAllRead() {
+    await api.patch("/notifications/read-all").catch(() => {});
+    setUnreadCount(0);
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  }
+
+  // ── Public / unauthenticated nav ──
   if (!isAuthenticated) {
-    // Show minimal nav for public pages — match landing PublicNavbar
     if (pathname === "/") {
       return (
         <nav className="sticky top-0 z-50 bg-white/90 dark:bg-[#0A0F1E]/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
@@ -55,6 +115,7 @@ export default function Navbar(): JSX.Element {
     return <></>;
   }
 
+  // ── Authenticated nav ──
   const role = user?.role ?? "CLIENT";
   const roleConf = ROLE_CONFIG[role] ?? ROLE_CONFIG.CLIENT;
 
@@ -123,11 +184,99 @@ export default function Navbar(): JSX.Element {
           )}
         </div>
 
-        {/* User info + logout */}
+        {/* Right side: Bell + User + Logout */}
         <div className="flex items-center gap-3 shrink-0">
+
+          {/* ── Notification Bell ── */}
+          <div className="relative">
+            <button
+              onClick={() => setBellOpen((o) => !o)}
+              className="relative p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+              aria-label="Notifications"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 border-2 border-white dark:border-[#0A0F1E]">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* ── Bell Dropdown ── */}
+            {bellOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setBellOpen(false)} />
+                <div className="absolute right-0 top-full mt-2 w-80 z-50 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">Notifications</span>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllRead}
+                        className="text-xs text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 font-semibold transition-colors"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  {/* List */}
+                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                    {notifications.length === 0 ? (
+                      <div className="py-10 text-center">
+                        <span className="text-2xl block mb-2 opacity-30">🔔</span>
+                        <p className="text-sm text-slate-400">No notifications yet.</p>
+                      </div>
+                    ) : (
+                      notifications.slice(0, 10).map((n) => (
+                        <button
+                          key={n.id}
+                          onClick={() => handleNotifClick(n)}
+                          className={`w-full text-left px-4 py-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 ${
+                            !n.isRead ? "bg-emerald-50/50 dark:bg-emerald-500/5" : ""
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${!n.isRead ? "bg-emerald-500" : "bg-transparent"}`} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{n.title}</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{n.message}</p>
+                              <p className="text-[10px] text-slate-400 font-mono mt-1">
+                                {new Date(n.createdAt).toLocaleString("en-IN", {
+                                  day: "numeric",
+                                  month: "short",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="border-t border-slate-100 dark:border-slate-800 p-3">
+                    <Link
+                      href="/notifications"
+                      onClick={() => setBellOpen(false)}
+                      className="block text-center text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 transition-colors"
+                    >
+                      View all notifications →
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* ── User info + logout ── */}
           {user && (
             <Link href="/profile/edit" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-              {/* Avatar */}
               {user.avatarUrl ? (
                 <img src={user.avatarUrl} alt="avatar" className="w-8 h-8 rounded-full border border-slate-300 dark:border-slate-600 object-cover shrink-0" />
               ) : (

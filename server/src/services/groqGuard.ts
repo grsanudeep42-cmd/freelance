@@ -35,7 +35,12 @@ export const groqGuard = {
       }
 
       // 2. GROQ API CHECK (For subtle manipulation, fake urgency, scam language)
-      
+
+      if (!env.GROQ_API_KEY) {
+        logger.warn("GROQ_API_KEY not set, skipping AI scan — failing open");
+        return { safe: true, reason: null, severity: "low" };
+      }
+
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { AdminJobStatus, JobStatus, JobType, UserRole } from "../generated/prisma";
 import { prisma } from "../services/postgres";
 import { logger } from "../utils/logger";
+import { createNotification } from "../services/notificationService";
 
 class HttpError extends Error {
   statusCode: number;
@@ -203,6 +204,17 @@ export async function approveAdminJob(req: Request, res: Response): Promise<void
         data: { status: AdminJobStatus.APPROVED }
       });
     });
+
+    // Notify freelancer: credits earned
+    if (job.assignedFreelancerId) {
+      await createNotification({
+        userId: job.assignedFreelancerId,
+        type: "MISSION_APPROVED",
+        title: "Mission approved! ⚡",
+        message: `You earned ${job.creditReward} credits for completing the mission.`,
+        link: `/dashboard`,
+      });
+    }
 
     res.status(200).json({ ok: true, data: { message: "Admin job approved" } });
   } catch (err) {

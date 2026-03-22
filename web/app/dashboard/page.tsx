@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import ProtectedRoute from "../../components/ProtectedRoute";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
+import { TOKEN_KEY, REFRESH_TOKEN_KEY } from "../../lib/constants";
 import type { UserRole } from "../../lib/types";
 import type { Job } from "../../lib/jobTypes";
 import { ProfileStrength } from "../../components/ProfileStrength";
@@ -26,8 +27,6 @@ const ROLE_BADGES: Record<UserRole, { label: string; className: string }> = {
     className: "bg-purple-50 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30",
   },
 };
-
-const DEV_ROLES: UserRole[] = ["CLIENT", "FREELANCER"];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -100,7 +99,7 @@ function KpiCard({
 
 export default function DashboardPage(): JSX.Element {
   const router = useRouter();
-  const { user, logout, setUserRole, isLoading: authLoading } = useAuth();
+  const { user, logout, updateUser, isLoading: authLoading } = useAuth();
 
   // 1. My Active Jobs (FREELANCER)
   const [activeJobs, setActiveJobs] = useState<Job[]>([]);
@@ -124,6 +123,7 @@ export default function DashboardPage(): JSX.Element {
   // Submission State for Active Admin Missions
   const [submissionForms, setSubmissionForms] = useState<Record<string, string>>({});
   const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [switching, setSwitching] = useState(false);
 
   // Stats derived from postedJobs
   const clientStats = {
@@ -243,6 +243,29 @@ export default function DashboardPage(): JSX.Element {
   function handleLogout() {
     logout();
     router.replace("/login");
+  }
+
+  async function handleSwitchRole() {
+    if (switching || displayUser?.role === "ADMIN") return;
+    try {
+      setSwitching(true);
+      const res = await api.patch("/users/switch-role");
+      const { user: updatedUser, accessToken, refreshToken } = res.data.data;
+
+      // Update tokens
+      localStorage.setItem(TOKEN_KEY, accessToken);
+      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+
+      // Update auth context
+      updateUser(updatedUser);
+
+      // Reload page so all role-specific UI refreshes
+      window.location.reload();
+    } catch {
+      alert("Failed to switch role. Please try again.");
+    } finally {
+      setSwitching(false);
+    }
   }
 
   async function handleClaimMission(jobId: string) {
@@ -697,6 +720,42 @@ export default function DashboardPage(): JSX.Element {
                         </p>
                       </div>
                     )}
+
+                    {/* Role switcher — not for ADMIN */}
+                    {displayUser?.role !== "ADMIN" && (
+                      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
+                          Switch Mode
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={displayUser?.role !== "CLIENT" ? handleSwitchRole : undefined}
+                            disabled={switching || displayUser?.role === "CLIENT"}
+                            className={`py-2 rounded-xl text-xs font-bold border transition-all ${
+                              displayUser?.role === "CLIENT"
+                                ? "border-2 border-blue-500 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 cursor-default"
+                                : "border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400"
+                            }`}
+                          >
+                            {switching && displayUser?.role === "FREELANCER" ? "Switching…" : "Client"}
+                          </button>
+                          <button
+                            onClick={displayUser?.role !== "FREELANCER" ? handleSwitchRole : undefined}
+                            disabled={switching || displayUser?.role === "FREELANCER"}
+                            className={`py-2 rounded-xl text-xs font-bold border transition-all ${
+                              displayUser?.role === "FREELANCER"
+                                ? "border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 cursor-default"
+                                : "border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-400"
+                            }`}
+                          >
+                            {switching && displayUser?.role === "CLIENT" ? "Switching…" : "Freelancer"}
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 text-center">
+                          Switch between Client and Freelancer mode
+                        </p>
+                      </div>
+                    )}
                   </section>
 
                   {/* Actions */}
@@ -732,30 +791,6 @@ export default function DashboardPage(): JSX.Element {
                           <span className="text-slate-500 dark:text-slate-400">Completed</span>
                           <span className="font-mono font-bold text-slate-900 dark:text-white">{clientStats.completed}</span>
                         </div>
-                      </div>
-                    </section>
-                  )}
-
-                  {/* DEV TOOLS */}
-                  {process.env.NODE_ENV === "development" && (
-                    <section className="bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/30 rounded-2xl p-5">
-                      <p className="text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wide mb-3">
-                        ⚡ Dev Tools — Switch Role
-                      </p>
-                      <div className="flex gap-2">
-                        {DEV_ROLES.map((r) => (
-                          <button
-                            key={r}
-                            onClick={() => setUserRole(r)}
-                            className={
-                              displayUser.role === r
-                                ? "flex-1 rounded-xl border-2 border-amber-500 bg-amber-50 dark:bg-amber-400/10 text-amber-700 dark:text-amber-300 py-2 text-sm font-semibold cursor-default"
-                                : "flex-1 rounded-xl border border-slate-200 dark:border-white/10 bg-transparent text-slate-500 dark:text-slate-400 py-2 text-sm font-semibold hover:border-slate-400 dark:hover:border-white/25 transition-colors"
-                            }
-                          >
-                            {r === "CLIENT" ? "Client" : "Freelancer"}
-                          </button>
-                        ))}
                       </div>
                     </section>
                   )}

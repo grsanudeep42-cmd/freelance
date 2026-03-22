@@ -3,6 +3,7 @@ import { z } from "zod";
 import { JobStatus } from "../generated/prisma";
 import { prisma } from "../services/postgres";
 import { logger } from "../utils/logger";
+import { createNotification } from "../services/notificationService";
 
 const createReviewSchema = z.object({
   jobId: z.string().uuid(),
@@ -83,6 +84,15 @@ export async function createReview(req: Request, res: Response): Promise<void> {
       });
 
       return newReview;
+    });
+
+    // Notify reviewee: new review
+    await createNotification({
+      userId: revieweeId,
+      type: "NEW_REVIEW",
+      title: "You received a review ⭐",
+      message: `${rating}/5 stars: "${comment?.slice(0, 60) ?? "No comment"}"`,
+      link: `/profile/${revieweeId}`,
     });
 
     res.status(201).json({ ok: true, data: review });

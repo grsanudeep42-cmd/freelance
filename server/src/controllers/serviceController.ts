@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ServiceOrderStatus, UserRole } from "../generated/prisma";
 import { prisma } from "../services/postgres";
 import { logger } from "../utils/logger";
+import { createNotification } from "../services/notificationService";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -238,6 +239,15 @@ export async function orderService(req: Request, res: Response): Promise<void> {
       },
     });
 
+    // Notify freelancer: new order
+    await createNotification({
+      userId: service.freelancerId,
+      type: "NEW_ORDER",
+      title: "New order received! 📦",
+      message: `You have a new order for "${service.title}"`,
+      link: `/services/orders`,
+    });
+
     res.status(201).json({ ok: true, data: order });
   } catch (error) {
     logger.error("orderService error:", error);
@@ -271,6 +281,17 @@ export async function deliverService(req: Request, res: Response): Promise<void>
       where: { id: orderId },
       data:  { status: ServiceOrderStatus.DELIVERED, deliverable: parsed.data.deliverable },
     });
+
+    // Notify client: delivery received
+    const serviceForNotif = await prisma.service.findUnique({ where: { id: order.serviceId }, select: { title: true } });
+    await createNotification({
+      userId: order.clientId,
+      type: "ORDER_DELIVERED",
+      title: "Your order was delivered 🚚",
+      message: `"${serviceForNotif?.title ?? "Service"}" has been delivered. Review and accept.`,
+      link: `/services/orders`,
+    });
+
     res.json({ ok: true, data: updated });
   } catch (error) {
     logger.error("deliverService error:", error);

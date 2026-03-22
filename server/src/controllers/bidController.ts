@@ -3,6 +3,7 @@ import { z } from "zod";
 import { BidStatus, JobStatus, UserRole } from "../generated/prisma";
 import { prisma } from "../services/postgres";
 import { logger } from "../utils/logger";
+import { createNotification } from "../services/notificationService";
 
 type AuthedUser = { id: string; role: UserRole };
 
@@ -51,7 +52,7 @@ export async function applyBid(req: Request, res: Response): Promise<void> {
     const created = await prisma.$transaction(async (tx) => {
       const job = await tx.job.findUnique({
         where: { id: body.jobId },
-        select: { id: true, status: true, clientId: true }
+        select: { id: true, status: true, clientId: true, title: true }
       });
 
       if (!job) {
@@ -106,6 +107,21 @@ export async function applyBid(req: Request, res: Response): Promise<void> {
 
       return bid;
     });
+
+    // Notify client: new bid on their job
+    const jobForNotif = await prisma.job.findUnique({
+      where: { id: body.jobId },
+      select: { clientId: true, title: true },
+    });
+    if (jobForNotif) {
+      await createNotification({
+        userId: jobForNotif.clientId,
+        type: "NEW_BID",
+        title: "New bid received",
+        message: `A bid of ₹${body.amount} was placed on "${jobForNotif.title}"`,
+        link: `/jobs/${body.jobId}`,
+      });
+    }
 
     res.status(201).json({ ok: true, data: created });
   } catch (err) {
@@ -181,7 +197,7 @@ export async function acceptBid(req: Request, res: Response): Promise<void> {
       const bid = await tx.bid.findUnique({
         where: { id: params.bidId },
         include: {
-          job: { select: { id: true, clientId: true, status: true } }
+          job: { select: { id: true, clientId: true, status: true, title: true } }
         }
       });
 
@@ -224,6 +240,21 @@ export async function acceptBid(req: Request, res: Response): Promise<void> {
 
       return accepted;
     });
+
+    // Notify freelancer: their bid was accepted
+    const acceptedBid = await prisma.bid.findUnique({
+      where: { id: params.bidId },
+      include: { job: { select: { id: true, title: true } } },
+    });
+    if (acceptedBid) {
+      await createNotification({
+        userId: acceptedBid.freelancerId,
+        type: "BID_ACCEPTED",
+        title: "Your bid was accepted! 🎉",
+        message: `Your bid on "${acceptedBid.job.title}" was accepted. Start working now.`,
+        link: `/jobs/${acceptedBid.job.id}`,
+      });
+    }
 
     res.status(200).json({ ok: true, data: updatedBid });
   } catch (err) {

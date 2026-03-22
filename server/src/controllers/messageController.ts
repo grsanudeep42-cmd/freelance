@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import { prisma } from "../services/postgres";
 import { logger } from "../utils/logger";
 import { groqGuard } from "../services/groqGuard";
+import { createNotification } from "../services/notificationService";
 
 const sendSchema = z.object({
   receiverId: z.string().uuid(),
@@ -91,6 +92,15 @@ export async function sendMessage(req: Request, res: Response): Promise<void> {
     // 3. Safe transmission
     const message = await prisma.message.create({
       data: { senderId, receiverId, jobId, content }
+    });
+
+    // Notify receiver: new message
+    await createNotification({
+      userId: receiverId,
+      type: "NEW_MESSAGE",
+      title: "New message",
+      message: `${req.user!.email}: ${content.slice(0, 60)}`,
+      link: `/messages/${senderId}`,
     });
 
     res.status(201).json({ ok: true, data: message });

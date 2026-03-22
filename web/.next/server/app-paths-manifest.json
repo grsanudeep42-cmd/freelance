@@ -1,8 +1,10 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/analytics/page": "app/analytics/page.js",
-  "/login/page": "app/login/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
   "/jobs/page": "app/jobs/page.js",
-  "/admin/page": "app/admin/page.js"
+  "/services/page": "app/services/page.js",
+  "/services/orders/page": "app/services/orders/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/analytics/page": "app/analytics/page.js",
+  "/messages/page": "app/messages/page.js",
+  "/login/page": "app/login/page.js"
 }

@@ -5,6 +5,7 @@ import { paymentService } from "../services/paymentService";
 import { logger } from "../utils/logger";
 import { EscrowStatus, JobStatus, UserRole, TransactionType, BidStatus, JobType } from "../generated/prisma";
 import { env } from "../config/env";
+import { createNotification } from "../services/notificationService";
 
 export async function initiatePayment(req: Request, res: Response): Promise<void> {
   const user = req.user;
@@ -168,6 +169,23 @@ export async function releasePayment(req: Request, res: Response): Promise<void>
           }
         });
       }
+    });
+
+    // Notify freelancer: payment released
+    await createNotification({
+      userId: escrow.freelancerId,
+      type: "PAYMENT_RELEASED",
+      title: "Payment released! 💰",
+      message: `₹${escrow.netAmount} has been released to your account.`,
+      link: `/jobs/${escrow.jobId}`,
+    });
+    // Notify client: job completed
+    await createNotification({
+      userId: escrow.clientId,
+      type: "JOB_COMPLETED",
+      title: "Job marked complete ✅",
+      message: `Payment released. Don't forget to leave a review!`,
+      link: `/jobs/${escrow.jobId}`,
     });
 
     res.status(200).json({
