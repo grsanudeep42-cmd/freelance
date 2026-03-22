@@ -39,64 +39,70 @@ export default function PublicProfilePage(): JSX.Element {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#0f172a] px-4 py-10 flex justify-center">
-        <p className="text-slate-400 animate-pulse">Loading profile…</p>
+      <main className="min-h-screen bg-white dark:bg-[#0A0F1E] px-4 py-8 flex justify-center items-center">
+        <p className="text-slate-500 dark:text-slate-400 animate-pulse text-sm font-medium">Loading profile…</p>
       </main>
     );
   }
 
   if (error || !profile) {
     return (
-      <main className="min-h-screen bg-[#0f172a] px-4 py-10 flex justify-center">
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-6 py-4 text-red-300">
+      <main className="min-h-screen bg-white dark:bg-[#0A0F1E] px-4 py-8 flex justify-center items-center">
+        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl px-4 py-3 text-red-600 dark:text-red-400 text-sm font-medium shadow-sm">
           {error || "Profile not found."}
         </div>
       </main>
     );
   }
 
+  function roleBadgeClass(role: string): string {
+    if (role === "FREELANCER") return "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30";
+    if (role === "CUSTOMER") return "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/30";
+    return "bg-slate-100 dark:bg-slate-700/40 text-slate-500 border-slate-200 dark:border-slate-600";
+  }
+
   return (
-    <main className="min-h-screen bg-[#0f172a] px-4 py-10">
+    <main className="min-h-screen bg-white dark:bg-[#0A0F1E] px-4 py-8">
       <div className="mx-auto w-full max-w-3xl space-y-6">
         
         {/* Profile Card */}
-        <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-8 flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left shadow-xl">
+        <section className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left shadow-sm">
           {profile.avatarUrl ? (
-             <img src={profile.avatarUrl} alt="avatar" className="w-24 h-24 rounded-full border-2 border-slate-600 object-cover" />
+             <img src={profile.avatarUrl} alt="avatar" className="w-20 h-20 rounded-full border-2 border-emerald-200 dark:border-emerald-500/30 object-cover" />
           ) : (
-             <div className="w-24 h-24 shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl font-bold select-none drop-shadow">
+             <div className="w-20 h-20 shrink-0 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white text-3xl font-bold select-none">
                 {profile.fullName[0]?.toUpperCase() ?? "?"}
              </div>
           )}
           
           <div className="flex-1 space-y-2">
-            <h1 className="text-white text-2xl font-bold tracking-tight mb-1">{profile.fullName}</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{profile.fullName}</h1>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-               <span className="px-3 py-1 bg-slate-700/50 text-slate-300 text-xs font-bold uppercase tracking-wider rounded-full border border-slate-600">
-                  {profile.role}
+               <span className={`px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider rounded-full border ${roleBadgeClass(profile.role)}`}>
+                  {profile.role === "CUSTOMER" ? "CLIENT" : profile.role}
                </span>
                {profile.isVerified && (
-                  <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider rounded-full border border-emerald-500/30">
+                  <span className="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 text-xs font-bold uppercase tracking-wider rounded-full">
                      ✓ Verified
                   </span>
                )}
             </div>
             
-            <div className="pt-2 flex flex-col md:flex-row items-center gap-4">
+            <div className="pt-2 flex flex-col md:flex-row items-center justify-center md:justify-start gap-4">
                {profile.totalRatings && profile.totalRatings > 0 ? (
-                 <div className="flex items-center gap-2 bg-[#0b1220] px-3 py-1.5 rounded-lg border border-slate-700/60 shadow-inner">
+                 <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 inline-flex items-center gap-2">
                     <StarRating value={profile.rating || 0} readonly />
-                    <span className="text-slate-200 font-semibold">{profile.rating?.toFixed(1)}</span>
-                    <span className="text-slate-500 text-sm">({profile.totalRatings} reviews)</span>
+                    <span className="text-slate-900 dark:text-white font-semibold text-sm">{profile.rating?.toFixed(1)}</span>
+                    <span className="text-slate-500 text-xs">({profile.totalRatings})</span>
                  </div>
                ) : (
-                 <p className="text-slate-500 text-sm italic">No ratings yet.</p>
+                 <p className="text-slate-500 dark:text-slate-400 text-sm italic">No ratings yet.</p>
                )}
                
                {profile.createdAt && (
                  <>
-                   <span className="hidden md:inline text-slate-600">•</span>
-                   <span className="text-slate-400 text-sm">Member since {new Date(profile.createdAt).getFullYear()}</span>
+                   <span className="hidden md:inline text-slate-300 dark:text-slate-700">•</span>
+                   <span className="text-slate-500 dark:text-slate-400 text-sm">Member since {new Date(profile.createdAt).getFullYear()}</span>
                  </>
                )}
             </div>
@@ -104,12 +110,12 @@ export default function PublicProfilePage(): JSX.Element {
             {(profile.githubUrl || profile.linkedinUrl) && (
                <div className="flex gap-4 pt-3 items-center justify-center md:justify-start">
                   {profile.linkedinUrl && (
-                     <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-blue-400 transition-colors">
+                     <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" className="text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-sm font-medium">
                         LinkedIn ↗
                      </a>
                   )}
                   {profile.githubUrl && (
-                     <a href={profile.githubUrl} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-white transition-colors">
+                     <a href={profile.githubUrl} target="_blank" rel="noreferrer" className="text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-sm font-medium">
                         GitHub ↗
                      </a>
                   )}
@@ -122,21 +128,21 @@ export default function PublicProfilePage(): JSX.Element {
           <div className="md:col-span-2 space-y-6">
             {/* About / Bio */}
             {profile.bio && (
-              <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6 space-y-4 shadow-xl">
-                <h2 className="text-white text-xl font-bold">About</h2>
-                <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
+              <section className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">About</h2>
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
               </section>
             )}
 
             {/* Portfolio */}
             {profile.freelancerProfile?.portfolioLinks?.length > 0 && (
-               <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6 space-y-4 shadow-xl">
-                  <h2 className="text-white text-xl font-bold">Portfolio</h2>
+               <section className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">Portfolio</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                      {profile.freelancerProfile.portfolioLinks.map((link: any, i: number) => (
-                        <a key={i} href={link.url} target="_blank" rel="noreferrer" className="block p-4 rounded-xl border border-slate-700/60 bg-[#0b1220] hover:border-slate-500 hover:bg-slate-800/80 transition-all card-hover">
-                           <h3 className="text-white font-medium text-sm mb-1">{link.title}</h3>
-                           <span className="text-indigo-400 text-xs font-semibold">View Project &rarr;</span>
+                        <a key={i} href={link.url} target="_blank" rel="noreferrer" className="block bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 hover:border-emerald-300 dark:hover:border-emerald-500/30 transition-colors">
+                           <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1 line-clamp-1">{link.title}</h3>
+                           <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1 inline-block">View Project →</span>
                         </a>
                      ))}
                   </div>
@@ -144,79 +150,83 @@ export default function PublicProfilePage(): JSX.Element {
             )}
 
             {/* Reviews Feed */}
-            <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6 space-y-6 shadow-xl">
-              <h2 className="text-white text-xl font-bold">Reviews</h2>
+            <section className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Reviews</h2>
           
-          {reviews.length > 0 ? (
-            <div className="space-y-4">
-              {reviews.map(r => (
-                <div key={r.id} className="p-5 bg-[#0b1220] rounded-xl border border-slate-700/50 shadow-sm flex flex-col sm:flex-row gap-4 transition-all hover:border-slate-500/50">
-                   <div className="flex-1">
-                     <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                           {r.reviewer?.avatarUrl ? (
-                             <img src={r.reviewer.avatarUrl} alt="avatar" className="w-8 h-8 rounded-full border border-slate-600" />
-                           ) : (
-                             <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-xs font-bold text-white uppercase">
-                                {r.reviewer?.fullName?.[0]}
-                             </div>
-                           )}
-                           <span className="text-white font-medium">{r.reviewer?.fullName}</span>
-                           <span className="text-slate-500 text-xs px-2 border-l border-slate-700">{new Date(r.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <StarRating value={r.rating} readonly />
-                     </div>
-                     {r.job?.title && (
-                       <p className="text-slate-500 text-xs mb-3 font-medium bg-slate-800/30 w-fit px-2 py-0.5 rounded border border-slate-700/30">Job: {r.job.title}</p>
-                     )}
-                     {r.comment && <p className="text-slate-300 text-sm leading-relaxed">{r.comment}</p>}
-                   </div>
+              {reviews.length > 0 ? (
+                <div className="space-y-4">
+                  {reviews.map(r => (
+                    <div key={r.id} className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col sm:flex-row gap-4">
+                       <div className="flex-1">
+                         <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-3">
+                               {r.reviewer?.avatarUrl ? (
+                                 <img src={r.reviewer.avatarUrl} alt="avatar" className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700" />
+                               ) : (
+                                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-xs font-bold text-white uppercase shrink-0">
+                                    {r.reviewer?.fullName?.[0]}
+                                 </div>
+                               )}
+                               <div className="flex flex-col">
+                                 <span className="text-sm font-semibold text-slate-900 dark:text-white">{r.reviewer?.fullName}</span>
+                                 <span className="text-xs text-slate-400">{new Date(r.createdAt).toLocaleDateString()}</span>
+                               </div>
+                            </div>
+                            <StarRating value={r.rating} readonly />
+                         </div>
+                         {r.job?.title && (
+                           <div className="mb-3">
+                              <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700/50 uppercase tracking-wider font-semibold truncate max-w-full inline-block">Job: {r.job.title}</span>
+                           </div>
+                         )}
+                         {r.comment && <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{r.comment}</p>}
+                       </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-xl border border-slate-700/30 bg-[#0b1220] p-8 text-center">
-               <span className="text-3xl block mb-2 opacity-40">⭐</span>
-               <p className="text-slate-500 italic">This user hasn't received any reviews yet.</p>
-            </div>
-          )}
-        </section>
-        </div> {/* end col-span-2 */}
-
-        {/* Sidebar Info */}
-        <div className="space-y-6 md:col-span-1">
-          {authUser?.id === profile.id && profile.role === "FREELANCER" && (
-            <section className="rounded-2xl border border-indigo-500/30 bg-[#1e293b] p-6 space-y-4 shadow-xl">
-               <h2 className="text-white text-sm font-bold flex items-center justify-between">
-                 Your Profile Strength
-                 <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 py-0.5 px-2 bg-slate-800 rounded">Private</span>
-               </h2>
-               <ProfileStrength score={profile.freelancerProfile?.profileStrength || 0} />
+              ) : (
+                <div className="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-8 text-center border border-slate-200 dark:border-slate-700/50">
+                   <span className="text-3xl block mb-2 opacity-50 grayscale">⭐</span>
+                   <p className="text-slate-500 dark:text-slate-400 text-sm italic">No reviews yet.</p>
+                </div>
+              )}
             </section>
-          )}
+          </div>
 
-          {profile.role === "FREELANCER" && profile.freelancerProfile?.skills?.length > 0 && (
-             <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6 space-y-4 shadow-xl">
-               <h2 className="text-white text-lg font-bold">Skills</h2>
-               <div className="flex flex-wrap gap-2">
-                 {profile.freelancerProfile.skills.map((skill: string, i: number) => {
-                   const hasBadge = profile.skillBadges?.some((b: any) => b.skill === skill);
-                   return (
-                     <span key={i} className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${
-                       hasBadge 
-                         ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" 
-                         : "bg-slate-700/50 text-slate-300 border-slate-600"
-                     }`}>
-                       {hasBadge && <span className="mr-1">✓</span>}
-                       {skill}
-                     </span>
-                   )
-                 })}
-               </div>
-             </section>
-          )}
+          {/* Sidebar Info */}
+          <div className="space-y-6 md:col-span-1">
+            {authUser?.id === profile.id && profile.role === "FREELANCER" && (
+              <section className="bg-white dark:bg-[#111827] border border-emerald-200 dark:border-emerald-500/20 rounded-2xl shadow-sm p-5 space-y-4">
+                 <div className="flex items-center justify-between">
+                   <h2 className="text-sm font-bold text-slate-900 dark:text-white">Your Profile Strength</h2>
+                   <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] uppercase font-semibold tracking-wider py-0.5 px-2 rounded">Private</span>
+                 </div>
+                 <ProfileStrength score={profile.freelancerProfile?.profileStrength || 0} />
+              </section>
+            )}
+
+            {profile.role === "FREELANCER" && profile.freelancerProfile?.skills?.length > 0 && (
+               <section className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-5 space-y-4">
+                 <h2 className="text-base font-bold text-slate-900 dark:text-white">Skills</h2>
+                 <div className="flex flex-wrap gap-2">
+                   {profile.freelancerProfile.skills.map((skill: string, i: number) => {
+                     const hasBadge = profile.skillBadges?.some((b: any) => b.skill === skill);
+                     return (
+                       <span key={i} className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${
+                         hasBadge 
+                           ? "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/40" 
+                           : "bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600"
+                       }`}>
+                         {hasBadge && <span className="mr-1">✓</span>}
+                         {skill}
+                       </span>
+                     )
+                   })}
+                 </div>
+               </section>
+            )}
+          </div>
         </div>
-      </div>
       </div>
     </main>
   );

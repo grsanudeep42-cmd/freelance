@@ -20,13 +20,22 @@ interface ServiceOrder {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  PENDING:           "bg-slate-500/15 text-slate-400 border-slate-500/30",
-  IN_PROGRESS:       "bg-blue-500/15 text-blue-400 border-blue-500/30",
-  DELIVERED:         "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  REVISION_REQUESTED:"bg-orange-500/15 text-orange-400 border-orange-500/30",
-  COMPLETED:         "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  CANCELLED:         "bg-red-500/15 text-red-400 border-red-500/30",
+  PENDING:           "bg-slate-100 dark:bg-slate-700/40 text-slate-500 border-slate-200 dark:border-slate-600",
+  IN_PROGRESS:       "bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/30",
+  DELIVERED:         "bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30",
+  REVISION_REQUESTED:"bg-orange-50 dark:bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-500/30",
+  COMPLETED:         "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30",
+  CANCELLED:         "bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/30",
 };
+
+const inputClass =
+  "w-full rounded-xl px-4 py-3 text-sm bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-colors disabled:opacity-50";
+
+const primaryBtnClass =
+  "bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors";
+
+const ghostBtnClass =
+  "border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-xl transition-colors";
 
 // ─── Order Row ────────────────────────────────────────────────────────────────
 
@@ -49,87 +58,90 @@ function OrderRow({
     : order.client?.fullName ?? "Client";
 
   return (
-    <div className="glass-card p-5 space-y-3 card-hover">
+    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-5 space-y-3 hover:border-emerald-300 dark:hover:border-emerald-500/30 transition-colors">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-white font-semibold text-sm truncate">{order.service.title}</h3>
-          <p className="text-slate-400 text-xs mt-0.5">
-            {isAsClient ? "Freelancer" : "Client"}: <span className="text-slate-300">{otherParty}</span>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{order.service.title}</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            {isAsClient ? "Freelancer" : "Client"}: <span className="font-semibold text-slate-700 dark:text-slate-300">{otherParty}</span>
           </p>
         </div>
         <div className="text-right shrink-0">
-          <span className={`inline-block px-2.5 py-0.5 rounded-lg text-[11px] font-bold border ${statusStyle}`}>
+          <span className={`inline-block px-2.5 py-0.5 rounded-lg text-xs font-bold border ${statusStyle}`}>
             {order.status.replace("_", " ")}
           </span>
-          <p className="font-mono text-emerald-400 font-bold text-sm mt-1">₹{order.price.toLocaleString("en-IN")}</p>
+          <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm mt-1">₹{order.price.toLocaleString("en-IN")}</p>
         </div>
       </div>
 
       {order.requirements && (
-        <p className="text-slate-400 text-xs bg-white/2 rounded-lg px-3 py-2 border border-white/5">
-          <span className="text-slate-500 font-semibold">Requirements: </span>
+        <p className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-lg px-3 py-2 text-xs text-slate-600 dark:text-slate-400">
+          <span className="font-semibold text-slate-800 dark:text-slate-300">Requirements: </span>
           {order.requirements}
         </p>
       )}
 
       {order.deliverable && (
-        <p className="text-slate-300 text-xs bg-emerald-500/5 border border-emerald-500/15 rounded-lg px-3 py-2">
-          <span className="text-emerald-400 font-semibold">Deliverable: </span>
+        <p className="bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/15 rounded-lg px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
+          <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Deliverable: </span>
           {order.deliverable}
         </p>
       )}
 
       {/* Freelancer: deliver work */}
       {!isAsClient && order.status === "IN_PROGRESS" && onDeliver && (
-        <>
+        <div className="pt-2">
           {!showDeliverForm ? (
             <button
               onClick={() => setShowDeliverForm(true)}
-              className="btn-primary py-1.5 px-4 text-xs rounded-lg"
+              className={`${primaryBtnClass} py-1.5 px-4 text-xs rounded-lg inline-block`}
             >
               Deliver Work →
             </button>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 mt-2">
               <textarea
                 value={deliverable}
                 onChange={(e) => setDeliverable(e.target.value)}
                 rows={2}
-                className="input-field resize-none text-sm"
+                className={`${inputClass} resize-none min-h-[60px]`}
                 placeholder="Paste your work link, output, or description…"
               />
               <div className="flex gap-2">
                 <button
                   onClick={() => { setShowDeliverForm(false); setDeliverable(""); }}
-                  className="btn-ghost py-1.5 px-4 text-xs rounded-lg"
+                  className={`${ghostBtnClass} py-1.5 px-4 text-xs rounded-lg font-medium`}
                 >
                   Cancel
                 </button>
                 <button
                   disabled={deliverable.trim().length < 10}
                   onClick={() => onDeliver(order.id + "||" + deliverable)}
-                  className="btn-primary py-1.5 px-4 text-xs rounded-lg disabled:opacity-40"
+                  className={`${primaryBtnClass} py-1.5 px-4 text-xs rounded-lg disabled:opacity-40`}
                 >
                   Submit Delivery
                 </button>
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Client: mark complete */}
       {isAsClient && order.status === "DELIVERED" && onComplete && (
-        <button
-          onClick={() => onComplete(order.id)}
-          className="btn-primary py-1.5 px-4 text-xs rounded-lg bg-emerald-600 hover:bg-emerald-500"
-        >
-          ✓ Mark Complete
-        </button>
+        <div className="pt-2">
+          <button
+            onClick={() => onComplete(order.id)}
+            className={`${primaryBtnClass} py-1.5 px-4 text-xs rounded-lg inline-block`}
+          >
+            ✓ Mark Complete
+          </button>
+          <p className="text-slate-400 dark:text-slate-500 text-[10px] uppercase font-semibold tracking-wider mt-2">Marking complete releases payment from escrow.</p>
+        </div>
       )}
 
-      <p className="text-slate-600 text-xs font-mono">
-        {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+      <p className="text-xs text-slate-400 dark:text-slate-500 font-mono pt-1">
+        {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
       </p>
     </div>
   );
@@ -176,62 +188,67 @@ export default function MyOrdersPage(): JSX.Element {
 
   return (
     <ProtectedRoute>
-      <main className="min-h-screen bg-appBg px-4 py-8 page-enter">
-        <div className="mx-auto max-w-3xl space-y-8">
-          <header className="glass-card p-6">
-            <h1 className="font-display text-2xl font-bold text-white">My Orders</h1>
-            <p className="text-slate-400 text-sm mt-1">Track orders you&apos;ve placed and received.</p>
+      <main className="min-h-screen bg-white dark:bg-[#0A0F1E] px-4 py-8">
+        <div className="mx-auto max-w-3xl space-y-6">
+          <header className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm px-6 py-5">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">My Orders</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Track orders you&apos;ve placed and received.</p>
           </header>
 
           {loading ? (
-            <div className="space-y-4 animate-pulse">
+            <div className="space-y-4 animate-pulse pt-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="glass-card h-28" />
+                <div key={i} className="bg-slate-100 dark:bg-slate-800 rounded-2xl h-28 shadow-sm" />
               ))}
             </div>
           ) : (
-            <>
+            <div className="space-y-8 pt-2">
               {/* Orders I Placed (as client) */}
               {clientOrders.length > 0 && (
                 <section className="space-y-4">
-                  <h2 className="font-display font-bold text-white text-base flex items-center gap-2">
-                    <span className="w-1 h-4 rounded bg-blue-500 inline-block" />
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span className="w-1.5 h-5 rounded-full bg-blue-500 inline-block" />
                     Orders I Placed
-                    <span className="font-mono text-xs bg-white/5 border border-white/8 px-2 py-0.5 rounded-full text-slate-400">
+                    <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 font-mono text-[10px] px-2 py-0.5 rounded-full font-bold ml-1">
                       {clientOrders.length}
                     </span>
                   </h2>
-                  {clientOrders.map((o) => (
-                    <OrderRow key={o.id} order={o} isAsClient onComplete={handleComplete} />
-                  ))}
+                  <div className="space-y-4">
+                     {clientOrders.map((o) => (
+                       <OrderRow key={o.id} order={o} isAsClient onComplete={handleComplete} />
+                     ))}
+                  </div>
                 </section>
               )}
 
               {/* Orders I Received (as freelancer) */}
               {freelancerOrders.length > 0 && (
                 <section className="space-y-4">
-                  <h2 className="font-display font-bold text-white text-base flex items-center gap-2">
-                    <span className="w-1 h-4 rounded bg-violet-500 inline-block" />
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span className="w-1.5 h-5 rounded-full bg-emerald-500 inline-block" />
                     Orders I Received
-                    <span className="font-mono text-xs bg-white/5 border border-white/8 px-2 py-0.5 rounded-full text-slate-400">
+                    <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 font-mono text-[10px] px-2 py-0.5 rounded-full font-bold ml-1">
                       {freelancerOrders.length}
                     </span>
                   </h2>
-                  {freelancerOrders.map((o) => (
-                    <OrderRow key={o.id} order={o} isAsClient={false} onDeliver={handleDeliver} />
-                  ))}
+                  <div className="space-y-4">
+                     {freelancerOrders.map((o) => (
+                       <OrderRow key={o.id} order={o} isAsClient={false} onDeliver={handleDeliver} />
+                     ))}
+                  </div>
                 </section>
               )}
 
               {clientOrders.length === 0 && freelancerOrders.length === 0 && (
-                <div className="glass-card p-12 text-center space-y-3">
-                  <p className="text-slate-500">No orders yet.</p>
-                  <Link href="/services" className="inline-block btn-primary px-6 py-2 rounded-xl text-sm">
+                <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-12 text-center space-y-4 flex flex-col items-center">
+                  <span className="text-4xl block opacity-30 grayscale saturate-0">🤝</span>
+                  <p className="text-slate-500 dark:text-slate-400 font-medium">No orders yet.</p>
+                  <Link href="/services" className={`${primaryBtnClass} px-6 py-2.5 text-sm inline-block`}>
                     Browse Services →
                   </Link>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       </main>

@@ -8,6 +8,17 @@ import { useAuth } from "../../../context/AuthContext";
 import { api } from "../../../lib/api";
 import { SERVICE_CATEGORIES, getSubcategories } from "../../../lib/categories";
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const inputClass =
+  "w-full rounded-xl px-4 py-3 text-sm bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-colors disabled:opacity-50";
+
+const primaryBtnClass =
+  "bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors";
+
+const ghostBtnClass =
+  "border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-xl transition-colors";
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function NewServicePage(): JSX.Element {
@@ -81,10 +92,11 @@ export default function NewServicePage(): JSX.Element {
   if (user && user.role !== "FREELANCER") {
     return (
       <ProtectedRoute>
-        <main className="min-h-screen bg-appBg flex items-center justify-center">
-          <div className="glass-card p-8 text-center max-w-sm">
-            <p className="text-slate-400 mb-4">Only freelancers can create services.</p>
-            <Link href="/services" className="btn-ghost px-6 py-2 rounded-xl">← Browse Services</Link>
+        <main className="min-h-screen bg-white dark:bg-[#0A0F1E] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-8 text-center max-w-sm mx-auto flex flex-col items-center">
+            <span className="text-4xl block opacity-30 grayscale saturate-0 mb-4">⛔</span>
+            <p className="text-slate-400 font-medium mb-4">Only freelancers can create services.</p>
+            <Link href="/services" className={`${ghostBtnClass} px-6 py-2 rounded-xl text-sm inline-block`}>← Browse Services</Link>
           </div>
         </main>
       </ProtectedRoute>
@@ -93,31 +105,31 @@ export default function NewServicePage(): JSX.Element {
 
   return (
     <ProtectedRoute>
-      <main className="min-h-screen bg-appBg px-4 py-8 page-enter">
+      <main className="min-h-screen bg-white dark:bg-[#0A0F1E] px-4 py-8">
         <div className="mx-auto max-w-2xl space-y-5">
-          <Link href="/services" className="inline-flex items-center gap-1.5 text-slate-400 text-sm hover:text-white transition-colors">
+          <Link href="/services" className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-sm hover:text-slate-900 dark:hover:text-white transition-colors font-medium">
             ← Back to Services
           </Link>
 
-          <header className="glass-card-accent p-6">
-            <h1 className="font-display text-2xl font-bold text-white">Create a New Service</h1>
-            <p className="text-slate-400 text-sm mt-1">List your skills and let clients hire you directly.</p>
+          <header className="bg-white dark:bg-[#111827] border border-emerald-200 dark:border-emerald-500/20 rounded-2xl shadow-sm px-6 py-5">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Create a New Service</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">List your skills and let clients hire you directly.</p>
           </header>
 
-          <div className="glass-card p-6 space-y-5">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 space-y-5">
             {/* Title */}
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Service Title <span className="text-red-400">*</span>
               </label>
               <input
                 value={form.title}
                 onChange={(e) => update("title", e.target.value)}
                 maxLength={100}
-                className="input-field"
+                className={inputClass}
                 placeholder="e.g. I will build your React web app from scratch"
               />
-              <p className={`text-xs mt-1 ${form.title.length < 10 && form.title.length > 0 ? "text-amber-400" : "text-slate-600"}`}>
+              <p className={`text-xs mt-1 font-medium ${form.title.length < 10 && form.title.length > 0 ? "text-amber-500" : "text-slate-400"}`}>
                 {form.title.length} / 100 (min 10)
               </p>
             </div>
@@ -125,34 +137,34 @@ export default function NewServicePage(): JSX.Element {
             {/* Category + Subcategory */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Category <span className="text-red-400">*</span>
                 </label>
                 <select
                   value={form.category}
                   onChange={(e) => update("category", e.target.value)}
-                  className="input-field"
+                  className={inputClass}
                 >
-                  <option value="">Select category…</option>
+                  <option value="" className="text-slate-400">Select category…</option>
                   {SERVICE_CATEGORIES.map((c) => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
+                    <option key={c.value} value={c.value} className="text-slate-900 dark:text-white">{c.label}</option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Subcategory
                 </label>
                 <select
                   value={form.subcategory}
                   onChange={(e) => update("subcategory", e.target.value)}
                   disabled={!form.category}
-                  className="input-field disabled:opacity-50"
+                  className={`${inputClass} disabled:opacity-50`}
                 >
-                  <option value="">Select subcategory…</option>
+                  <option value="" className="text-slate-400">Select subcategory…</option>
                   {(subcategories as readonly string[]).map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                    <option key={s} value={s} className="text-slate-900 dark:text-white">{s}</option>
                   ))}
                 </select>
               </div>
@@ -160,7 +172,7 @@ export default function NewServicePage(): JSX.Element {
 
             {/* Description */}
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Description <span className="text-red-400">*</span>
               </label>
               <textarea
@@ -168,18 +180,18 @@ export default function NewServicePage(): JSX.Element {
                 onChange={(e) => update("description", e.target.value)}
                 maxLength={1000}
                 rows={5}
-                className="input-field resize-none"
+                className={`${inputClass} resize-none`}
                 placeholder="Describe your service in detail — what you'll deliver, your process, what clients can expect…"
               />
-              <p className={`text-xs mt-1 ${form.description.length < 30 && form.description.length > 0 ? "text-amber-400" : "text-slate-600"}`}>
+              <p className={`text-xs mt-1 font-medium ${form.description.length < 30 && form.description.length > 0 ? "text-amber-500" : "text-slate-400"}`}>
                 {form.description.length} / 1000 (min 30)
               </p>
             </div>
 
             {/* Price + Delivery + Revisions */}
             <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              <div className="col-span-3 sm:col-span-1">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Price (₹) <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -188,12 +200,12 @@ export default function NewServicePage(): JSX.Element {
                   type="number"
                   min={100}
                   max={500000}
-                  className="input-field"
+                  className={inputClass}
                   placeholder="500"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              <div className="col-span-3 sm:col-span-1">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Delivery (days) <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -202,12 +214,12 @@ export default function NewServicePage(): JSX.Element {
                   type="number"
                   min={1}
                   max={90}
-                  className="input-field"
+                  className={inputClass}
                   placeholder="7"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              <div className="col-span-3 sm:col-span-1">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Revisions
                 </label>
                 <input
@@ -216,7 +228,7 @@ export default function NewServicePage(): JSX.Element {
                   type="number"
                   min={0}
                   max={10}
-                  className="input-field"
+                  className={inputClass}
                   placeholder="1"
                 />
               </div>
@@ -224,17 +236,17 @@ export default function NewServicePage(): JSX.Element {
 
             {/* What's included */}
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
                 What&apos;s Included (3 bullet points) <span className="text-red-400">*</span>
               </label>
               <div className="space-y-2">
                 {form.includes.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3">
-                    <span className="text-emerald-400 font-bold text-lg shrink-0">✓</span>
+                    <span className="text-emerald-500 font-bold text-lg shrink-0 w-4 text-center">✓</span>
                     <input
                       value={item}
                       onChange={(e) => updateInclude(idx, e.target.value)}
-                      className="input-field"
+                      className={inputClass}
                       placeholder={`Benefit ${idx + 1}…`}
                       minLength={5}
                     />
@@ -245,7 +257,7 @@ export default function NewServicePage(): JSX.Element {
 
             {/* Error */}
             {error && (
-              <div className="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-red-400 text-sm">
+              <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl px-4 py-3 text-red-600 dark:text-red-400 text-sm font-medium shadow-sm">
                 {error}
               </div>
             )}
@@ -254,7 +266,7 @@ export default function NewServicePage(): JSX.Element {
             <button
               disabled={!canSubmit}
               onClick={onSubmit}
-              className="btn-primary w-full py-3 rounded-xl text-base disabled:opacity-40"
+              className={`${primaryBtnClass} w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-40 shadow-sm`}
             >
               {loading ? (
                 <span className="flex items-center gap-2 justify-center">

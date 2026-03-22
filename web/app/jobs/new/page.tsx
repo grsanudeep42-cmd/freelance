@@ -59,15 +59,15 @@ function Field({
 }): JSX.Element {
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-slate-300">{label}</label>
+      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">{label}</label>
       {children}
-      {error ? <p className="text-red-400 text-xs">{error}</p> : null}
+      {error ? <p className="text-red-600 dark:text-red-400 text-xs">{error}</p> : null}
     </div>
   );
 }
 
 const inputClass =
-  "w-full rounded-xl bg-[#0b1220] text-white placeholder-slate-600 px-4 py-3 text-sm outline-none border border-slate-700 focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/20 transition-colors disabled:opacity-50";
+  "w-full rounded-xl px-4 py-3 text-sm bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-colors disabled:opacity-50";
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
@@ -132,12 +132,12 @@ export default function NewJobPage(): JSX.Element {
 
   return (
     <ProtectedRoute>
-      <main className="min-h-screen bg-[#0f172a] px-4 py-10">
+      <main className="min-h-screen bg-white dark:bg-[#0A0F1E] px-4 py-8">
         <div className="mx-auto w-full max-w-xl">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-white text-2xl font-bold tracking-tight">Post a Job</h1>
-            <p className="mt-1 text-slate-400 text-sm">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Post a Job</h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 mb-6">
               Describe your work clearly so the best freelancers can find it.
             </p>
           </div>
@@ -145,7 +145,7 @@ export default function NewJobPage(): JSX.Element {
           <form
             onSubmit={handleSubmit}
             noValidate
-            className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6 space-y-5"
+            className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-5"
           >
             {/* Title */}
             <Field label="Job title" error={errors.title}>
@@ -175,16 +175,34 @@ export default function NewJobPage(): JSX.Element {
 
             {/* Type */}
             <Field label="Job type">
-              <select
-                id="job-type"
-                value={form.type}
-                onChange={(e) => set("type", e.target.value as JobType)}
-                className={inputClass}
-                disabled={submitting}
-              >
-                <option value="FREE">Free — open apply, no bidding</option>
-                <option value="BID">Bid — freelancers propose their price</option>
-              </select>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => set("type", "FREE")}
+                  disabled={submitting}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all ${
+                    form.type === "FREE"
+                      ? "border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                      : "border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#111827] text-slate-500 hover:border-emerald-300 dark:hover:border-emerald-500/50"
+                  }`}
+                >
+                  <span className="font-bold text-sm mb-1">FREE</span>
+                  <span className="text-xs opacity-80">Open apply — no bidding</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => set("type", "BID")}
+                  disabled={submitting}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all ${
+                    form.type === "BID"
+                      ? "border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                      : "border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#111827] text-slate-500 hover:border-emerald-300 dark:hover:border-emerald-500/50"
+                  }`}
+                >
+                  <span className="font-bold text-sm mb-1">BID</span>
+                  <span className="text-xs opacity-80">Freelancers propose their price</span>
+                </button>
+              </div>
             </Field>
 
             {/* Budget — only for BID */}
@@ -212,14 +230,14 @@ export default function NewJobPage(): JSX.Element {
                 value={form.deadlineAt}
                 onChange={(e) => set("deadlineAt", e.target.value)}
                 min={new Date().toISOString().split("T")[0]}
-                className={`${inputClass} [color-scheme:dark]`}
+                className={`${inputClass} dark:[color-scheme:dark]`}
                 disabled={submitting}
               />
             </Field>
 
             {/* Server error */}
             {serverError ? (
-              <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-300 text-sm">
+              <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl px-4 py-3 text-red-600 dark:text-red-400 text-sm">
                 {serverError}
               </div>
             ) : null}
@@ -230,7 +248,7 @@ export default function NewJobPage(): JSX.Element {
                 type="button"
                 onClick={() => router.push("/jobs")}
                 disabled={submitting}
-                className="flex-1 rounded-xl border border-slate-600 py-3 text-sm font-semibold text-slate-300 hover:border-slate-400 hover:text-white transition-colors disabled:opacity-50"
+                className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-3 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -238,7 +256,7 @@ export default function NewJobPage(): JSX.Element {
                 id="submit-job-btn"
                 type="submit"
                 disabled={submitting}
-                className="flex-1 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition-colors disabled:opacity-60 shadow-lg shadow-blue-500/20"
+                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white py-3 text-sm font-semibold transition-colors disabled:opacity-50"
               >
                 {submitting ? "Posting…" : "Post Job"}
               </button>

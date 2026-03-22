@@ -20,26 +20,22 @@ type BidPageJob = {
 
 function statusBadgeClass(status: string): string {
   const s = status.toUpperCase();
-  if (s === "ACCEPTED") return "bg-emerald-500/20 text-emerald-200 border-emerald-500/30";
-  if (s === "REJECTED") return "bg-red-500/20 text-red-200 border-red-500/30";
-  return "bg-slate-700/40 text-slate-300 border-slate-600/40";
+  if (s === "ACCEPTED") return "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30";
+  if (s === "REJECTED") return "bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-300 border-red-200 dark:border-red-500/30";
+  return "bg-slate-100 dark:bg-slate-700/40 text-slate-500 border-slate-200 dark:border-slate-600";
 }
 
 // ─── Skeleton ────────────────────────────────────────────────────────────────
 
 function SkeletonBid(): JSX.Element {
   return (
-    <div className="rounded-xl bg-[#1e293b] border border-slate-700/60 p-5 animate-pulse space-y-3">
+    <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl p-5 animate-pulse shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
       <div className="flex items-center justify-between">
-        <div className="h-4 bg-slate-600/60 rounded w-1/3" />
-        <div className="h-5 bg-slate-600/40 rounded-full w-20" />
+        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3" />
+        <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded-full w-20" />
       </div>
-      <div className="h-3 bg-slate-600/40 rounded w-full" />
-      <div className="h-3 bg-slate-600/40 rounded w-4/5" />
-      <div className="flex justify-between">
-        <div className="h-3 bg-slate-600/40 rounded w-1/4" />
-        <div className="h-8 bg-slate-600/40 rounded-xl w-28" />
-      </div>
+      <div className="h-20 bg-slate-200 dark:bg-slate-700 rounded-xl w-full" />
+      <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded-xl w-full" />
     </div>
   );
 }
@@ -76,7 +72,6 @@ export default function BidsPage(): JSX.Element {
       setBids(bidsPayload);
     } catch (err) {
       console.error("Failed to load bids list data:", err);
-      // Let's log the specific Axios error response if available
       if (typeof err === "object" && err !== null && "response" in err) {
         // @ts-expect-error ignoring typed axios error for quick logging
         console.error("API response details:", err.response?.data);
@@ -117,20 +112,20 @@ export default function BidsPage(): JSX.Element {
 
   return (
     <ProtectedRoute>
-      <main className="min-h-screen bg-[#0f172a] px-4 py-10">
+      <main className="min-h-screen bg-white dark:bg-[#0A0F1E] px-4 py-8">
         <div className="mx-auto w-full max-w-2xl space-y-6">
 
           {/* Header */}
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-5 shadow-sm flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-white text-2xl font-bold tracking-tight">Bids received</h1>
-              <p className="mt-1 text-slate-400 text-sm">
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Bids received</h1>
+              <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
                 Review proposals and accept the best fit.
               </p>
             </div>
             <Link
               href={`/jobs/${jobId}`}
-              className="rounded-xl border border-slate-600 px-4 py-2 text-sm font-medium text-slate-300 hover:border-slate-400 hover:text-white transition-colors"
+              className="border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-xl transition-colors px-4 py-2 text-sm font-medium"
             >
               ← Back to Job
             </Link>
@@ -138,13 +133,13 @@ export default function BidsPage(): JSX.Element {
 
           {/* Error */}
           {error ? (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-300 text-sm">
+            <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl px-4 py-3 text-red-600 dark:text-red-400 text-sm">
               {error}
             </div>
           ) : null}
 
           {acceptError ? (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-300 text-sm">
+            <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl px-4 py-3 text-red-600 dark:text-red-400 text-sm">
               {acceptError}
             </div>
           ) : null}
@@ -159,9 +154,10 @@ export default function BidsPage(): JSX.Element {
           {/* Bid list */}
           {!loading && !error ? (
             bids.length === 0 ? (
-              <div className="rounded-xl border border-slate-700 bg-[#1e293b] px-6 py-10 text-center">
-                <p className="text-slate-300 font-medium">No bids yet.</p>
-                <p className="mt-2 text-slate-500 text-sm">
+              <div className="bg-white dark:bg-[#111827] border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl px-6 py-12 text-center shadow-sm">
+                <div className="text-4xl mb-4">🤝</div>
+                <h3 className="text-base font-semibold text-slate-700 dark:text-slate-300">No bids yet.</h3>
+                <p className="mt-1 text-slate-400 text-sm">
                   Freelancers will appear here once they submit proposals.
                 </p>
               </div>
@@ -176,24 +172,24 @@ export default function BidsPage(): JSX.Element {
                   return (
                     <div
                       key={bid.id}
-                      className="rounded-xl border border-slate-700/60 bg-[#1e293b] p-5 space-y-4"
+                      className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4 transition-colors hover:border-emerald-300 dark:hover:border-emerald-500/30"
                     >
                       {/* Top row */}
                       <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div>
-                          <p className="text-white font-semibold text-sm">
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">
                             {bid.freelancer?.fullName ?? "Freelancer"}
                           </p>
-                          <p className="text-blue-300 font-bold text-lg mt-0.5">
+                          <p className="font-mono font-bold text-2xl text-emerald-600 dark:text-emerald-400 mt-0.5">
                             ₹{Number(bid.amount).toLocaleString("en-IN")}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${statusBadgeClass(status)}`}>
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusBadgeClass(status)}`}>
                             {status}
                           </span>
                           {bid.creditsSpent > 0 && (
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-amber-500/15 text-amber-300 border-amber-500/30">
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold border bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-500/30">
                               {bid.creditsSpent} credit{bid.creditsSpent !== 1 ? "s" : ""}
                             </span>
                           )}
@@ -201,9 +197,9 @@ export default function BidsPage(): JSX.Element {
                       </div>
 
                       {/* Cover letter */}
-                      <div className="rounded-xl bg-[#0b1220] border border-slate-700/60 px-4 py-3">
-                        <p className="text-slate-400 text-xs font-medium mb-1.5">Cover letter</p>
-                        <p className="text-slate-300 text-sm whitespace-pre-wrap leading-relaxed">
+                      <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3">
+                        <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">Cover letter</p>
+                        <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
                           {bid.coverLetter}
                         </p>
                       </div>
@@ -214,7 +210,7 @@ export default function BidsPage(): JSX.Element {
                           id={`accept-bid-${bid.id}`}
                           disabled={isAccepting || accepting !== null}
                           onClick={() => acceptBid(bid.id)}
-                          className="w-full rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/10"
+                          className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-2.5 text-sm font-semibold transition-colors disabled:opacity-50"
                         >
                           {isAccepting ? "Accepting…" : "Accept Bid"}
                         </button>

@@ -111,17 +111,17 @@ export default function JobDetailsPage(): JSX.Element {
   }
 
   function typeBadgeClasses(): string {
-    if (jobType === "FREE") return "bg-blue-500/20 text-blue-200 border border-blue-500/30";
-    if (jobType === "BID") return "bg-emerald-500/20 text-emerald-200 border border-emerald-500/30";
-    if (jobType === "ADMIN") return "bg-purple-500/20 text-purple-200 border border-purple-500/30";
-    return "bg-slate-900/30 text-slate-200 border border-slate-700/50";
+    if (jobType === "FREE") return "bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-500/30";
+    if (jobType === "BID") return "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30";
+    if (jobType === "ADMIN") return "bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-200 dark:border-amber-500/30";
+    return "bg-slate-100 dark:bg-slate-700/40 text-slate-500 border-slate-200 dark:border-slate-600";
   }
 
   function statusBadgeClasses(): string {
-    if (jobStatus === "OPEN") return "bg-slate-900/30 text-slate-200 border border-slate-700/50";
-    if (jobStatus === "IN_PROGRESS") return "bg-amber-500/20 text-amber-200 border border-amber-500/30";
-    if (jobStatus === "COMPLETED") return "bg-emerald-500/20 text-emerald-200 border border-emerald-500/30";
-    return "bg-slate-900/30 text-slate-200 border border-slate-700/50";
+    if (jobStatus === "OPEN") return "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20";
+    if (jobStatus === "IN_PROGRESS") return "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20";
+    if (jobStatus === "COMPLETED") return "bg-slate-100 dark:bg-slate-700/40 text-slate-500 border-slate-200 dark:border-slate-600";
+    return "bg-slate-100 dark:bg-slate-700/40 text-slate-500 border-slate-200 dark:border-slate-600";
   }
 
   async function refreshJob(): Promise<void> {
@@ -169,7 +169,7 @@ export default function JobDetailsPage(): JSX.Element {
       setActionMessage("✅ Payment released to freelancer!");
       const res = await api.get(`/payments/escrow/${job.id}`);
       setEscrow(res.data?.data || null);
-      await refreshJob(); // updates to COMPLETED state and opens the review block intuitively natively!
+      await refreshJob();
     } catch (err: any) {
       setActionError(err.response?.data?.error?.message || "Failed to release payment.");
     } finally {
@@ -319,7 +319,7 @@ export default function JobDetailsPage(): JSX.Element {
   // ─── Input class ──────────────────────────────────────────────────────────────
 
   const inputClass =
-    "w-full rounded-xl bg-[#0f172a] text-white px-3 py-2 text-sm outline-none border border-slate-700 focus:border-slate-500 disabled:opacity-50 transition-colors";
+    "w-full rounded-xl px-4 py-3 text-sm bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-colors disabled:opacity-50";
 
   // ─── Action section ───────────────────────────────────────────────────────────
 
@@ -339,114 +339,113 @@ export default function JobDetailsPage(): JSX.Element {
                 <button
                   disabled={actionBusy}
                   onClick={completeJobAction}
-                  className="w-full rounded-xl bg-amber-600 py-3 text-sm font-semibold text-white hover:bg-amber-500 transition-colors shadow-lg shadow-amber-600/20 disabled:opacity-50"
+                  className="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl transition-colors py-3 disabled:opacity-50"
                 >
                   {actionBusy ? "Processing…" : "Mark as Complete"}
                 </button>
             )}
 
             {jobType === "BID" && jobStatus === "IN_PROGRESS" && !escrowLoading && (
-               <div className="rounded-xl border border-slate-700/60 bg-[#0b1220] p-5 space-y-4">
+               <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
                   {!escrow ? (
                     <>
-                       <div className="flex justify-between items-center pb-3 border-b border-slate-700/50">
-                          <h4 className="text-white font-bold text-sm uppercase tracking-wide">Pay into Escrow</h4>
+                       <div className="flex justify-between items-center pb-3 border-b border-slate-200 dark:border-slate-700">
+                          <h4 className="text-slate-900 dark:text-white font-bold text-sm uppercase tracking-wide">Pay into Escrow</h4>
                        </div>
                        {acceptedBid ? (
-                         <div className="space-y-2 text-sm text-slate-300">
+                         <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                            <div className="flex justify-between">
                              <span>Freelancer:</span>
-                             <span className="font-semibold text-white">{acceptedBid.freelancer?.fullName || "Assigned"}</span>
+                             <span className="font-semibold text-slate-900 dark:text-white">{acceptedBid.freelancer?.fullName || "Assigned"}</span>
                            </div>
                            <div className="flex justify-between">
                              <span>Bid Amount:</span>
-                             <span className="font-semibold text-white">₹{acceptedBid.amount}</span>
+                             <span className="font-semibold text-slate-900 dark:text-white">₹{acceptedBid.amount}</span>
                            </div>
-                           <div className="flex justify-between text-slate-400">
+                           <div className="flex justify-between text-slate-500 dark:text-slate-400">
                              <span>Platform Fee (5%):</span>
                              <span>₹{(Math.round(acceptedBid.amount * 5) / 100).toFixed(2)}</span>
                            </div>
-                           <div className="flex justify-between text-emerald-400 font-semibold border-t border-slate-700/50 pt-2 pb-1 mt-1">
+                           <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold border-t border-slate-200 dark:border-slate-700/50 pt-2 pb-1 mt-1">
                              <span>Freelancer Receives:</span>
                              <span>₹{(acceptedBid.amount - (Math.round(acceptedBid.amount * 5) / 100)).toFixed(2)}</span>
                            </div>
                            <button
                              onClick={initiateEscrowPayment}
                              disabled={actionBusy}
-                             className="w-full mt-3 rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+                             className="w-full mt-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors py-3 disabled:opacity-50"
                            >
                              {actionBusy ? "Processing…" : `Pay ₹${acceptedBid.amount} into Escrow`}
                            </button>
                          </div>
                        ) : (
-                         <p className="text-slate-500 text-sm italic">No accepted bid found.</p>
+                         <p className="text-slate-500 dark:text-slate-400 text-sm italic">No accepted bid found.</p>
                        )}
                     </>
                   ) : escrow.status === "HELD" ? (
                     <>
-                       <div className="flex justify-between items-center pb-3 border-b border-slate-700/50">
-                          <h4 className="text-white font-bold text-sm uppercase tracking-wide">Escrow Status</h4>
-                          <span className="bg-amber-500/20 text-amber-200 border border-amber-500/30 px-2 py-0.5 rounded text-xs font-bold">HELD</span>
+                       <div className="flex justify-between items-center pb-3 border-b border-slate-200 dark:border-slate-700/50">
+                          <h4 className="text-slate-900 dark:text-white font-bold text-sm uppercase tracking-wide">Escrow Status</h4>
+                          <span className="bg-amber-50 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30 px-2 py-0.5 rounded text-xs font-bold">HELD</span>
                        </div>
-                       <div className="space-y-2 text-sm text-slate-300">
+                       <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                           <p>🔒 ₹{escrow.amount} held in escrow</p>
-                          <p className="text-slate-400 text-xs">Freelancer receives: ₹{escrow.netAmount} after {Math.round((escrow.platformFee / escrow.amount) * 100)}% platform fee</p>
+                          <p className="text-slate-500 dark:text-slate-400 text-xs">Freelancer receives: ₹{escrow.netAmount} after {Math.round((escrow.platformFee / escrow.amount) * 100)}% platform fee</p>
                           <button
                             onClick={releaseEscrowPayment}
                             disabled={actionBusy}
-                            className="w-full mt-3 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition-colors shadow-lg shadow-blue-600/20 disabled:opacity-50"
+                            className="w-full mt-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors py-3 disabled:opacity-50"
                           >
                             {actionBusy ? "Releasing…" : "Release Payment"}
                           </button>
-                          <p className="text-slate-500 text-[10px] text-center uppercase tracking-widest mt-2">Releasing payment marks this Job Complete</p>
+                          <p className="text-slate-400 dark:text-slate-500 text-[10px] text-center uppercase tracking-widest mt-2">Releasing payment marks this Job Complete</p>
                        </div>
                     </>
                   ) : escrow.status === "RELEASED" ? (
                      <div className="text-center py-2 space-y-2">
-                        <span className="text-4xl">✅</span>
-                        <p className="text-emerald-400 font-bold text-sm">Payment of ₹{escrow.netAmount} released to freelancer</p>
-                        <p className="text-slate-400 text-xs font-medium">Job completed successfully.</p>
+                        <span className="text-4xl text-emerald-500">✅</span>
+                        <p className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">Payment of ₹{escrow.netAmount} released to freelancer</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">Job completed successfully.</p>
                      </div>
                   ) : null}
                </div>
             )}
 
-            <div className="rounded-xl border border-slate-700/60 bg-[#0b1220] p-4 flex items-center gap-3">
+            <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex items-center gap-3">
               <span className="text-2xl">📋</span>
-              <div>
-                <p className="text-white font-semibold text-sm">You posted this job</p>
-                <p className="text-slate-400 text-xs mt-0.5">
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">You posted this job</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   Review proposals from freelancers below.
                 </p>
               </div>
-              
-              {/* Message Controls */}
-              {user && user.id !== job.clientId && (
-                 <Link
-                   href={`/messages/${job.clientId}`}
-                   className="mt-4 block w-full text-center rounded-xl bg-slate-700 py-2.5 font-semibold text-white hover:bg-slate-600 transition-colors"
-                 >
-                   Message Client
-                 </Link>
-              )}
-              {user && user.id === job.clientId && job.assignedFreelancerId && (
-                 <Link
-                   href={`/messages/${job.assignedFreelancerId}`}
-                   className="mt-4 block w-full text-center rounded-xl bg-slate-700 py-2.5 font-semibold text-white hover:bg-slate-600 transition-colors"
-                 >
-                   Message Freelancer
-                 </Link>
-              )}
             </div>
+            {/* Message Controls */}
+            {user && user.id !== job.clientId && (
+               <Link
+                 href={`/messages/${job.clientId}`}
+                 className="mt-4 block w-full text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-xl py-2.5 text-sm font-semibold transition-colors"
+               >
+                 Message Client
+               </Link>
+            )}
+            {user && user.id === job.clientId && job.assignedFreelancerId && (
+               <Link
+                 href={`/messages/${job.assignedFreelancerId}`}
+                 className="mt-4 block w-full text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-xl py-2.5 text-sm font-semibold transition-colors"
+               >
+                 Message Freelancer
+               </Link>
+            )}
             {jobType === "BID" && (
               <Link
                 id="view-bids-btn"
                 href={`/jobs/${job.id}/bids`}
-                className="flex items-center justify-center gap-2 w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/20"
+                className="flex items-center justify-center gap-2 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors py-3"
               >
                 View Bids
                 {bidsCount !== null && (
-                  <span className="bg-white/20 rounded-full px-2 py-0.5 text-xs">
+                  <span className="bg-white/20 dark:bg-black/20 rounded-full px-2 py-0.5 text-xs text-white">
                     {bidsCount}
                   </span>
                 )}
@@ -457,11 +456,11 @@ export default function JobDetailsPage(): JSX.Element {
       }
 
       return (
-        <div className="rounded-xl border border-slate-700/60 bg-[#0b1220] p-4 flex items-center gap-3">
-          <span className="text-2xl">🔒</span>
+        <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col md:flex-row items-center md:items-start gap-3">
+          <span className="text-2xl mt-0.5">🔒</span>
           <div>
-            <p className="text-white font-semibold text-sm">Clients cannot take actions</p>
-            <p className="text-slate-400 text-xs mt-0.5">
+            <p className="text-sm font-semibold text-slate-900 dark:text-white">Clients cannot act</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Only freelancers can accept, bid on, or claim jobs.
             </p>
           </div>
@@ -475,7 +474,7 @@ export default function JobDetailsPage(): JSX.Element {
       return (
         <div>
           {!allowed && jobStatus === "OPEN" && (
-            <p className="text-slate-400 text-sm mb-3">
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">
               {isOwnJob ? "You cannot accept your own job." : "This job is no longer open."}
             </p>
           )}
@@ -485,8 +484,8 @@ export default function JobDetailsPage(): JSX.Element {
             onClick={acceptJob}
             className={
               allowed && !actionBusy
-                ? "w-full rounded-xl bg-blue-500 py-3 text-sm text-white font-semibold hover:bg-blue-600 transition-colors"
-                : "w-full rounded-xl bg-slate-700 py-3 text-sm text-white font-semibold opacity-50 cursor-not-allowed"
+                ? "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors py-3"
+                : "w-full bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-semibold rounded-xl transition-colors py-3 cursor-not-allowed opacity-50"
             }
           >
             {actionBusy ? "Accepting…" : "Accept Job"}
@@ -506,13 +505,13 @@ export default function JobDetailsPage(): JSX.Element {
       return (
         <div className="space-y-4">
           {!allowed && (
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
               {isOwnJob ? "You cannot bid on your own job." : "This job is not open for bidding."}
             </p>
           )}
           <fieldset disabled={actionBusy || !allowed} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-slate-300 text-sm font-medium">Your price (₹)</label>
+              <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium">Your price (₹)</label>
               <input
                 id="bid-amount"
                 value={amount}
@@ -526,7 +525,7 @@ export default function JobDetailsPage(): JSX.Element {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-slate-300 text-sm font-medium">Cover letter</label>
+              <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium">Cover letter</label>
               <textarea
                 id="bid-cover-letter"
                 value={coverLetter}
@@ -537,7 +536,7 @@ export default function JobDetailsPage(): JSX.Element {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-slate-300 text-sm font-medium">Credits to spend</label>
+              <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium">Credits to spend</label>
               <input
                 id="bid-credits-spent"
                 value={creditsSpent}
@@ -559,8 +558,8 @@ export default function JobDetailsPage(): JSX.Element {
               onClick={placeBid}
               className={
                 allowed && !actionBusy
-                  ? "w-full rounded-xl bg-emerald-500 py-3 text-sm text-white font-semibold hover:bg-emerald-600 transition-colors"
-                  : "w-full rounded-xl bg-slate-700 py-3 text-sm text-white font-semibold opacity-50 cursor-not-allowed"
+                  ? "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors py-3"
+                  : "w-full bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-semibold rounded-xl transition-colors py-3 cursor-not-allowed opacity-50"
               }
             >
               {actionBusy ? "Submitting…" : "Place Bid"}
@@ -580,7 +579,7 @@ export default function JobDetailsPage(): JSX.Element {
 
       if (!canClaim && !canSubmit && !isAssigned) {
         return (
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-500 dark:text-slate-400 text-sm">
             {job.assignedFreelancerId
               ? "This admin job is already claimed by another freelancer."
               : "You do not have permission to act on this admin job."}
@@ -597,8 +596,8 @@ export default function JobDetailsPage(): JSX.Element {
               onClick={claimAdmin}
               className={
                 !actionBusy
-                  ? "w-full rounded-xl bg-purple-600 py-3 text-sm text-white font-semibold hover:bg-purple-700 transition-colors"
-                  : "w-full rounded-xl bg-slate-700 py-3 text-sm text-white font-semibold opacity-50"
+                  ? "w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl transition-colors py-3"
+                  : "w-full bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-semibold rounded-xl transition-colors py-3 cursor-not-allowed opacity-50"
               }
             >
               {actionBusy ? "Claiming…" : "Claim Job"}
@@ -608,7 +607,7 @@ export default function JobDetailsPage(): JSX.Element {
           {canSubmit && (
             <>
               <div className="space-y-1.5">
-                <label className="block text-slate-300 text-sm font-medium">Submission</label>
+                <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium">Submission</label>
                 <textarea
                   id="admin-submission"
                   value={submission}
@@ -624,8 +623,8 @@ export default function JobDetailsPage(): JSX.Element {
                 onClick={submitAdmin}
                 className={
                   !actionBusy
-                    ? "w-full rounded-xl bg-emerald-600 py-3 text-sm text-white font-semibold hover:bg-emerald-700 transition-colors"
-                    : "w-full rounded-xl bg-slate-700 py-3 text-sm text-white font-semibold opacity-50"
+                    ? "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors py-3"
+                    : "w-full bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-semibold rounded-xl transition-colors py-3 cursor-not-allowed opacity-50"
                 }
               >
                 {actionBusy ? "Submitting…" : "Submit Work"}
@@ -636,186 +635,193 @@ export default function JobDetailsPage(): JSX.Element {
       );
     }
 
-    return <p className="text-slate-400 text-sm">No actions available for this job type.</p>;
+    return <p className="text-slate-500 dark:text-slate-400 text-sm">No actions available for this job type.</p>;
   }
 
   // ─── Page layout ─────────────────────────────────────────────────────────────
 
   return (
     <ProtectedRoute>
-      <main className="min-h-screen bg-[#0f172a] px-4 py-10">
-        <div className="mx-auto w-full max-w-2xl space-y-4">
+      <main className="min-h-screen bg-white dark:bg-[#0A0F1E] px-4 py-8">
+        <div className="mx-auto w-full max-w-4xl space-y-6">
 
           {/* Header */}
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-700 bg-[#1e293b] p-5">
-            <h1 className="text-white text-xl font-semibold">Job details</h1>
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm px-6 py-5 flex items-center justify-between gap-4 flex-wrap">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Job details</h1>
             <button
               onClick={() => router.back()}
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-white font-semibold hover:border-slate-500 transition-colors"
+              className="border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-xl transition-colors px-4 py-2 text-sm font-medium"
             >
               ← Back
             </button>
           </div>
 
           {loading ? (
-            <div className="rounded-xl bg-[#1e293b] border border-slate-700/60 p-8 animate-pulse space-y-4">
-              <div className="h-5 bg-slate-600/60 rounded w-2/3" />
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-8 animate-pulse space-y-4">
+              <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-2/3" />
               <div className="flex gap-2">
-                <div className="h-5 bg-slate-600/40 rounded-full w-16" />
-                <div className="h-5 bg-slate-600/40 rounded-full w-16" />
+                <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded-full w-16" />
+                <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded-full w-16" />
               </div>
-              <div className="h-3 bg-slate-600/40 rounded w-1/2" />
-              <div className="h-3 bg-slate-600/40 rounded w-1/3" />
+              <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2" />
+              <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3" />
             </div>
           ) : null}
 
           {error ? (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-300 text-sm">
+            <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl px-4 py-3 text-red-600 dark:text-red-400 text-sm">
               {error}
             </div>
           ) : null}
 
           {!loading && !error && job ? (
-            <>
-              {/* Job info */}
-              <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6 space-y-4">
-                <h2 className="text-white text-xl font-semibold">{job.title}</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+              
+              {/* Main Column */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Job info */}
+                <section className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 space-y-4">
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white leading-snug">{job.title}</h2>
 
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${typeBadgeClasses()}`}>
-                    {jobType || job.type}
-                  </span>
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusBadgeClasses()}`}>
-                    {jobStatus || job.status}
-                  </span>
-                </div>
-
-                <div className="text-slate-300 text-sm space-y-1.5">
-                  <p>{budgetOrRewardText()}</p>
-                  {bidsCount !== null ? (
-                    <p>
-                      {bidsCount} bid{bidsCount !== 1 ? "s" : ""}
-                    </p>
-                  ) : null}
-                  {job.deadlineAt ? (
-                    <p>
-                      Deadline:{" "}
-                      {new Date(job.deadlineAt).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </p>
-                  ) : null}
-                  {job.client && (
-                    <p>
-                      Posted by{" "}
-                      <span className="text-white font-medium">{job.client.fullName}</span>
-                    </p>
-                  )}
-                </div>
-              </section>
-
-              {/* Description */}
-              <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6">
-                <p className="text-slate-400 text-xs font-medium mb-2">Description</p>
-                <p className="text-slate-200 text-sm whitespace-pre-wrap leading-relaxed">
-                  {job.description}
-                </p>
-              </section>
-
-              {/* Action section */}
-              <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6 space-y-4">
-                <div>
-                  <h3 className="text-white text-lg font-bold">Action</h3>
-                  <p className="text-slate-400 mt-1 text-sm">
-                    Interact with this job based on your role.
-                  </p>
-                </div>
-
-                {actionError ? (
-                  <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-300 text-sm">
-                    {actionError}
+                  <div className="flex items-center gap-2 flex-wrap text-xs font-bold">
+                    <span className={`px-2.5 py-0.5 rounded-full border ${typeBadgeClasses()}`}>
+                      {jobType || job.type}
+                    </span>
+                    <span className={`px-2.5 py-0.5 rounded-full border ${statusBadgeClasses()}`}>
+                      {jobStatus || job.status}
+                    </span>
                   </div>
-                ) : null}
-                {actionMessage ? (
-                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-emerald-300 text-sm">
-                    {actionMessage}
+
+                  <div className="text-sm text-slate-600 dark:text-slate-300 space-y-1.5">
+                    <p className="font-semibold text-emerald-600 dark:text-emerald-400">{budgetOrRewardText()}</p>
+                    {bidsCount !== null ? (
+                      <p>
+                        {bidsCount} bid{bidsCount !== 1 ? "s" : ""}
+                      </p>
+                    ) : null}
+                    {job.deadlineAt ? (
+                      <p>
+                        Deadline:{" "}
+                        {new Date(job.deadlineAt).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                    ) : null}
+                    {job.client && (
+                      <p>
+                        Posted by{" "}
+                        <span className="text-slate-900 dark:text-white font-medium">{job.client.fullName}</span>
+                      </p>
+                    )}
                   </div>
-                ) : null}
-
-                {renderActionSection()}
-              </section>
-
-              {/* Reviews Section */}
-              {jobStatus === "COMPLETED" && (
-                <section className="rounded-2xl border border-slate-700 bg-[#1e293b] p-6 space-y-6">
-                  <h3 className="text-white text-lg font-bold">Reviews</h3>
-                  
-                  {user && (user.id === job.clientId || user.id === job.assignedFreelancerId) && !userHasReviewed ? (
-                    <div className="bg-[#0b1220] border border-slate-700/60 p-5 rounded-xl space-y-4">
-                      <p className="text-slate-300 font-medium text-sm">Leave a review for your experience:</p>
-                      
-                      <div className="space-y-1.5 flex flex-col items-start">
-                         <label className="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Rating</label>
-                         <StarRating value={reviewRating} onChange={setReviewRating} />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="block text-slate-400 text-xs uppercase tracking-wider font-semibold">Comment (optional)</label>
-                        <textarea
-                          value={reviewComment}
-                          onChange={e => setReviewComment(e.target.value)}
-                          maxLength={500}
-                          className={`${inputClass} min-h-[80px] bg-[#1e293b]`}
-                          placeholder="How was working with them?"
-                        />
-                      </div>
-
-                      <button
-                        onClick={submitReviewAction}
-                        disabled={actionBusy}
-                        className="rounded-xl px-5 py-2.5 w-full sm:w-auto bg-emerald-600 font-semibold text-white text-sm hover:bg-emerald-500 transition-colors disabled:opacity-50"
-                      >
-                         {actionBusy ? "Submitting…" : "Submit Review"}
-                      </button>
-                    </div>
-                  ) : (userHasReviewed && user && (user.id === job.clientId || user.id === job.assignedFreelancerId)) ? (
-                    <div className="p-4 bg-emerald-900/10 border border-emerald-900/40 rounded-xl">
-                      <p className="text-emerald-400 text-sm font-medium">You have submitted your review for this completed job.</p>
-                    </div>
-                  ) : null}
-
-                  {reviews.length > 0 ? (
-                    <div className="space-y-3">
-                      {reviews.map(r => (
-                        <div key={r.id} className="p-5 bg-[#0b1220] shadow-md shadow-black/20 rounded-xl border border-slate-700/50">
-                          <div className="flex items-center gap-3 mb-3">
-                             {r.reviewer?.avatarUrl ? (
-                               <img src={r.reviewer.avatarUrl} alt="avatar" className="w-8 h-8 rounded-full border border-slate-600" />
-                             ) : (
-                               <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-xs font-bold text-white uppercase">
-                                  {r.reviewer?.fullName?.[0]}
-                               </div>
-                             )}
-                             <div>
-                               <span className="text-white font-medium text-sm block">{r.reviewer?.fullName}</span>
-                               <span className="text-slate-500 text-xs block">{new Date(r.createdAt).toLocaleDateString()}</span>
-                             </div>
-                             <div className="ml-auto">
-                                <StarRating value={r.rating} readonly />
-                             </div>
-                          </div>
-                          {r.comment && <p className="text-slate-300 text-sm leading-relaxed">{r.comment}</p>}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-slate-500 text-sm italic bg-[#0b1220] p-4 text-center rounded-xl border border-slate-700/30">No reviews yet.</p>
-                  )}
                 </section>
-              )}
-            </>
+
+                {/* Description */}
+                <section className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Description</h4>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
+                    {job.description}
+                  </p>
+                </section>
+
+                {/* Reviews Section */}
+                {jobStatus === "COMPLETED" && (
+                  <section className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 space-y-4">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Reviews</h3>
+                    
+                    {user && (user.id === job.clientId || user.id === job.assignedFreelancerId) && !userHasReviewed ? (
+                      <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl p-5 space-y-4">
+                        <p className="text-slate-700 dark:text-slate-300 font-medium text-sm">Leave a review for your experience:</p>
+                        
+                        <div className="space-y-1.5 flex flex-col items-start">
+                           <label className="block text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-semibold">Rating</label>
+                           <StarRating value={reviewRating} onChange={setReviewRating} />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="block text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-semibold">Comment (optional)</label>
+                          <textarea
+                            value={reviewComment}
+                            onChange={e => setReviewComment(e.target.value)}
+                            maxLength={500}
+                            className={`${inputClass} min-h-[80px]`}
+                            placeholder="How was working with them?"
+                          />
+                        </div>
+
+                        <button
+                          onClick={submitReviewAction}
+                          disabled={actionBusy}
+                          className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors px-6 py-2.5 text-sm disabled:opacity-50"
+                        >
+                           {actionBusy ? "Submitting…" : "Submit Review"}
+                        </button>
+                      </div>
+                    ) : (userHasReviewed && user && (user.id === job.clientId || user.id === job.assignedFreelancerId)) ? (
+                      <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-4">
+                        <p className="text-emerald-700 dark:text-emerald-400 text-sm font-medium">You have submitted your review for this completed job.</p>
+                      </div>
+                    ) : null}
+
+                    {reviews.length > 0 ? (
+                      <div className="space-y-3 pt-2">
+                        {reviews.map(r => (
+                          <div key={r.id} className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4">
+                            <div className="flex items-center gap-3 mb-2">
+                               {r.reviewer?.avatarUrl ? (
+                                 <img src={r.reviewer.avatarUrl} alt="avatar" className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700" />
+                               ) : (
+                                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-xs font-bold text-white uppercase">
+                                    {r.reviewer?.fullName?.[0]}
+                                 </div>
+                               )}
+                               <div className="flex flex-col">
+                                 <span className="text-sm font-semibold text-slate-900 dark:text-white">{r.reviewer?.fullName}</span>
+                                 <span className="text-xs text-slate-400">{new Date(r.createdAt).toLocaleDateString()}</span>
+                               </div>
+                            </div>
+                            <div className="mb-2">
+                              <StarRating value={r.rating} readonly />
+                            </div>
+                            {r.comment && <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{r.comment}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                       <p className="text-slate-500 dark:text-slate-400 text-sm italic">No reviews yet.</p>
+                    )}
+                  </section>
+                )}
+              </div>
+
+              {/* Sidebar Column */}
+              <div className="lg:col-span-1">
+                <section className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 space-y-4">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">Action</h3>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
+                      Interact with this job based on your role.
+                    </p>
+                  </div>
+
+                  {actionError ? (
+                    <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl px-4 py-3 text-red-600 dark:text-red-400 text-sm">
+                      {actionError}
+                    </div>
+                  ) : null}
+                  {actionMessage ? (
+                    <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl px-4 py-3 text-emerald-700 dark:text-emerald-300 text-sm">
+                      {actionMessage}
+                    </div>
+                  ) : null}
+
+                  {renderActionSection()}
+                </section>
+              </div>
+
+            </div>
           ) : null}
         </div>
       </main>
