@@ -296,10 +296,46 @@ export async function completeServiceOrder(req: Request, res: Response): Promise
       err(res, 400, "BAD_REQUEST", "Order has not been delivered yet"); return;
     }
 
-    const updated = await prisma.serviceOrder.update({
-      where: { id: orderId },
-      data:  { status: ServiceOrderStatus.COMPLETED },
-    });
+    const platformFeeRate = 0.05;
+    const platformFee = Math.round(order.price * platformFeeRate);
+    const freelancerPayout = order.price - platformFee;
+
+    const [updated] = await prisma.$transaction([
+      // 1. Mark order complete
+      prisma.serviceOrder.update({
+        where: { id: orderId },
+        data:  { status: ServiceOrderStatus.COMPLETED },
+      }),
+      // 2. Deduct from client balance
+      prisma.user.update({
+        where: { id: order.clientId },
+        data:  { creditBalance: { decrement: order.price } },
+      }),
+      // 3. Credit freelancer balance
+      prisma.user.update({
+        where: { id: order.freelancerId },
+        data:  { creditBalance: { increment: freelancerPayout } },
+      }),
+      // 4. Client transaction record
+      prisma.transaction.create({
+        data: {
+          userId:      order.clientId,
+          type:        "CREDIT_SPENT",
+          amount:      order.price,
+          description: `Service order payment: ${orderId}`,
+        },
+      }),
+      // 5. Freelancer transaction record
+      prisma.transaction.create({
+        data: {
+          userId:      order.freelancerId,
+          type:        "PAYOUT",
+          amount:      freelancerPayout,
+          description: `Service order payout: ${orderId}`,
+        },
+      }),
+    ]);
+
     res.json({ ok: true, data: updated });
   } catch (error) {
     logger.error("completeServiceOrder error:", error);

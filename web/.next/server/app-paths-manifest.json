@@ -1,10 +1,8 @@
 {
   "/login/page": "app/login/page.js",
-  "/jobs/page": "app/jobs/page.js",
-  "/services/orders/page": "app/services/orders/page.js",
-  "/page": "app/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/services/new/page": "app/services/new/page.js",
   "/services/page": "app/services/page.js",
-  "/services/[id]/page": "app/services/[id]/page.js"
+  "/services/[id]/page": "app/services/[id]/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/messages/page": "app/messages/page.js",
+  "/services/orders/page": "app/services/orders/page.js"
 }
