@@ -72,65 +72,72 @@ export default function TakeTestPage(): JSX.Element {
 
   return (
     <ProtectedRoute>
-      <main className="min-h-screen bg-appBg px-4 py-8 page-enter">
+      <main className="min-h-screen bg-white dark:bg-[#0A0F1E] px-4 py-8">
         <div className="mx-auto max-w-2xl space-y-5">
+
           {/* Back */}
-          <Link href="/skills" className="inline-flex items-center gap-1.5 text-slate-400 text-sm hover:text-white transition-colors">
+          <Link href="/skills" className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
             ← Back to Skills
           </Link>
 
           {loading ? (
-            <div className="glass-card p-8 animate-pulse">
-              <div className="h-6 bg-white/8 rounded w-1/2 mb-4" />
-              <div className="h-4 bg-white/5 rounded w-3/4" />
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-8 animate-pulse">
+              <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-1/2 mb-4" />
+              <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-3/4" />
             </div>
           ) : error ? (
-            <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-8 text-center">
-              <p className="text-red-400">{error}</p>
+            <div className="rounded-2xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/5 p-8 text-center">
+              <p className="text-red-600 dark:text-red-400">{error}</p>
             </div>
           ) : result ? (
             /* ─── Result Screen ─────────────────────────────────────── */
-            <div className={`gradient-border rounded-2xl ${result.passed ? "glow-indigo" : ""}`}>
-              <div className={`glass-card rounded-2xl p-10 text-center space-y-4`}>
-                <p className="text-6xl">{result.passed ? "🎉" : "😔"}</p>
-                <p className="font-mono text-5xl font-bold" style={{ color: result.passed ? "#10b981" : "#f87171" }}>
-                  {result.score}%
-                </p>
-                {result.passed ? (
-                  <>
-                    <h2 className="font-display text-2xl font-bold text-emerald-400">You passed!</h2>
-                    <p className="text-slate-400 text-sm">✅ Verified badge added to your profile.</p>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="font-display text-2xl font-bold text-red-400">So close!</h2>
-                    <p className="text-slate-400 text-sm">
-                      Required: <span className="font-mono font-bold text-white">{result.passMark}%</span>. One attempt per test is allowed.
-                    </p>
-                  </>
-                )}
-                <Link href="/skills" className="inline-block mt-4 btn-ghost px-8 py-3 rounded-xl">
-                  Back to Skills
-                </Link>
-              </div>
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-10 text-center space-y-4">
+              <p className="text-6xl">{result.passed ? "🎉" : "😔"}</p>
+              <p className={`font-mono text-5xl font-bold ${result.passed ? "text-emerald-600 dark:text-emerald-400" : "text-red-500 dark:text-red-400"}`}>
+                {result.score}%
+              </p>
+              {result.passed ? (
+                <>
+                  <h2 className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">You passed!</h2>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm">✅ Verified badge added to your profile.</p>
+                  <div className="h-1.5 rounded-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400 mt-4 mx-auto w-32" />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-bold text-red-600 dark:text-red-400">So close!</h2>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm">
+                    Required: <span className="font-mono font-bold text-slate-900 dark:text-white">{result.passMark}%</span>. One attempt per test is allowed.
+                  </p>
+                </>
+              )}
+              <Link
+                href="/skills"
+                className="inline-block mt-4 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-xl transition-colors px-8 py-3 font-semibold text-sm"
+              >
+                ← Back to Skills
+              </Link>
             </div>
           ) : (
             /* ─── Test Form ─────────────────────────────────────────── */
             <>
               {/* Test header + progress */}
-              <header className="glass-card-accent p-6">
-                <h1 className="font-display text-xl font-bold text-white">{test?.title}</h1>
-                <p className="text-slate-400 text-sm mt-1">{test?.description}</p>
-                <div className="mt-4 flex items-center justify-between text-xs font-semibold mb-1.5">
-                  <span className="text-slate-400">{answered} / {questions.length} answered</span>
-                  <span className="text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-1">
+              <header className="bg-white dark:bg-[#111827] border border-emerald-200 dark:border-emerald-500/20 rounded-2xl shadow-sm p-6">
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">{test?.title}</h1>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{test?.description}</p>
+
+                <div className="mt-4 flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    {answered} / {questions.length} answered
+                  </span>
+                  <span className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold px-3 py-1 rounded-lg">
                     ⚠️ One attempt · {test?.passMark}% to pass
                   </span>
                 </div>
+
                 {/* Progress bar */}
-                <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                <div className="h-1.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
                   <div
-                    className="h-full rounded-full gradient-bg transition-all duration-300"
+                    className="h-full rounded-full bg-emerald-500 transition-all duration-300"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
@@ -139,9 +146,9 @@ export default function TakeTestPage(): JSX.Element {
               {/* Questions */}
               <div className="space-y-4">
                 {questions.map((q, qIdx) => (
-                  <section key={q.id} className="glass-card p-6 space-y-3">
-                    <p className="text-white text-sm font-semibold leading-relaxed">
-                      <span className="font-mono text-indigo-light">Q{qIdx + 1}.{" "}</span>
+                  <section key={q.id} className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 space-y-3">
+                    <p className="text-sm font-semibold leading-relaxed text-slate-900 dark:text-white">
+                      <span className="font-mono text-emerald-600 dark:text-emerald-400">Q{qIdx + 1}.{" "}</span>
                       {q.question}
                     </p>
                     <div className="space-y-2">
@@ -150,10 +157,10 @@ export default function TakeTestPage(): JSX.Element {
                         return (
                           <label
                             key={idx}
-                            className={`flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-all duration-200 ${
+                            className={`flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-all duration-150 ${
                               selected
-                                ? "border-indigo/60 bg-indigo/10 text-white"
-                                : "border-white/6 bg-white/2 text-slate-300 hover:border-white/15 hover:bg-white/4"
+                                ? "border-emerald-500 dark:border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-white"
+                                : "border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0f172a] text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                             }`}
                           >
                             <input
@@ -162,7 +169,7 @@ export default function TakeTestPage(): JSX.Element {
                               value={idx}
                               checked={selected}
                               onChange={() => handleSelect(q.id, idx)}
-                              className="accent-indigo shrink-0"
+                              className="accent-emerald-500 shrink-0"
                             />
                             <span className="text-sm">{opt}</span>
                           </label>
@@ -178,7 +185,7 @@ export default function TakeTestPage(): JSX.Element {
                 <button
                   onClick={handleSubmit}
                   disabled={submitting || answered < questions.length}
-                  className="btn-primary px-10 py-3 rounded-xl text-base disabled:opacity-40"
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors px-10 py-3 text-base disabled:opacity-40"
                 >
                   {submitting ? (
                     <span className="flex items-center gap-2">
@@ -193,6 +200,7 @@ export default function TakeTestPage(): JSX.Element {
               </div>
             </>
           )}
+
         </div>
       </main>
     </ProtectedRoute>
