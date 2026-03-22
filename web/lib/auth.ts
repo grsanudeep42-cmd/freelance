@@ -1,5 +1,5 @@
 import type { User, UserRole } from "./types";
-import { TOKEN_KEY } from "./constants";
+import { TOKEN_KEY, REFRESH_TOKEN_KEY } from "./constants";
 
 const USER_KEY = "skillbridge_user";
 
@@ -79,7 +79,7 @@ export async function login(email: string, password: string): Promise<{ token: s
     throw new Error(message);
   }
 
-  const json = (await res.json()) as { data?: { accessToken?: string; user?: Record<string, unknown> } };
+  const json = (await res.json()) as { data?: { accessToken?: string; refreshToken?: string; user?: Record<string, unknown> } };
   const token = json.data?.accessToken;
   if (!token) throw new Error("Missing access token");
 
@@ -87,6 +87,9 @@ export async function login(email: string, password: string): Promise<{ token: s
   const user = rawUser ? parseUserFromPayload(rawUser) : null;
 
   setToken(token);
+  if (json.data?.refreshToken) {
+    window.localStorage.setItem(REFRESH_TOKEN_KEY, json.data.refreshToken);
+  }
   if (user) setStoredUser(user);
 
   return { token, user: user! };
@@ -114,7 +117,7 @@ export async function register(
     throw new Error(message);
   }
 
-  const json = (await res.json()) as { data?: { accessToken?: string; user?: Record<string, unknown> } };
+  const json = (await res.json()) as { data?: { accessToken?: string; refreshToken?: string; user?: Record<string, unknown> } };
   const token = json.data?.accessToken;
   if (!token) throw new Error("Missing access token");
 
@@ -122,6 +125,9 @@ export async function register(
   const user = rawUser ? parseUserFromPayload(rawUser) : null;
 
   setToken(token);
+  if (json.data?.refreshToken) {
+    window.localStorage.setItem(REFRESH_TOKEN_KEY, json.data.refreshToken);
+  }
   if (user) setStoredUser(user);
 
   return { token, user: user! };
@@ -130,4 +136,7 @@ export async function register(
 export function logout(): void {
   setToken(null);
   setStoredUser(null);
+  if (typeof window !== "undefined") {
+    window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+  }
 }

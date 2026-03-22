@@ -179,10 +179,11 @@ export async function refreshToken(req: Request, res: Response): Promise<void> {
     }
 
     const accessToken = signAccessToken({ id: user.id, email: user.email, role: user.role });
+    const newRefreshToken = signRefreshToken({ id: user.id, email: user.email, role: user.role });
 
     res.status(200).json({
       ok: true,
-      data: { accessToken }
+      data: { accessToken, refreshToken: newRefreshToken }
     });
   } catch (err) {
     if (err instanceof z.ZodError) {

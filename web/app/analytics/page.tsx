@@ -187,7 +187,7 @@ export default function AnalyticsPage(): JSX.Element {
     const results = await Promise.allSettled([
       api.get("/payments/my-transactions"),
       api.get("/jobs"),
-      api.get("/bids/my"),
+      api.get("/bids"),
     ]);
 
     if (results[0].status === "fulfilled") {
