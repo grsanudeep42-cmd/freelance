@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { api } from "../../lib/api";
@@ -162,7 +162,7 @@ function ServiceCard({ service, isLoggedIn }: { service: PublicService; isLogged
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function ExplorePage(): JSX.Element {
+function ExploreContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialTab = searchParams?.get("tab") === "services" ? "services" : "jobs";
@@ -350,5 +350,13 @@ export default function ExplorePage(): JSX.Element {
         )}
       </div>
     </main>
+  );
+}
+
+export default function ExplorePageWrapper() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0b0f1a]" />}>
+      <ExploreContent />
+    </Suspense>
   );
 }
